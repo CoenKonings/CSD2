@@ -2,7 +2,7 @@ import simpleaudio as sa
 from time import sleep
 
 
-def play_sound(duration=0):
+def play_sound(duration=-1):
     """
     Play sample.wav once. Wait until playback has finished.
     """
@@ -10,7 +10,7 @@ def play_sound(duration=0):
     wave_obj = sa.WaveObject.from_wave_file("../samples/plokrkr.wav")
     play_obj = wave_obj.play()
 
-    if duration > 0:
+    if duration >= 0:
         sleep(duration)
     else:
         play_obj.wait_done()
