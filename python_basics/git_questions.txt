@@ -1,0 +1,21 @@
+1. Wat doet git diff?
+Git diff laat het verschil tussen twee commits / trees zien. Bijvoorbeeld: zonder argumenten krijg je een overzicht van de verschillen tussen je huidige bestanden en je laatste commit.
+
+2. Wat doet git fetch?
+Git fetch haalt eventuele wijzigingen van de remote op. Deze worden nog niet samengevoegd met je eigen werk.
+
+3. Wat doet git pull?
+Git pull is een "agressievere" versie van git fetch; deze haalt de wijzigingen op *en* voegt deze samen met je eigen werk.
+
+4. Wat doet git log?
+Git log laat zien welke commits er gedaan zijn.
+
+5. Wat doet git push?
+Git push uploadt al je commits naar de remote.
+
+6. Minimaal 3 redenen waarom git zinvol is:
+    1. Git zorgt ervoor dat je een backup van je code hebt. (mits je een remote gebruikt)
+    2. Git maakt samenwerken in hetzelfde project makkelijker, doordat het code (meestal) geautomatiseerd samenvoegt.
+    3. Git zorgt ervoor dat je terug kan naar een vorige versie als dat nodig is door bijvoorbeeld een foutieve wijziging in de code.
+    4. Git zorgt ervoor dat je kan terugvinden wie er verantwoordelijk is voor bepaalde wijzigingen in de code.
+    5. Git in combinatie met GitHub/GitLab/BitBucket/etc zorgt ervoor dat je je code openbaar kan maken, en dat anderen uit de open source community verder kunnen werken aan jouw project op een gecontroleerde/gestructureerde manier.
