@@ -13,6 +13,7 @@ def play_sound(duration=-1, sample_path="../samples/plokrkr.wav"):
 
     if duration >= 0:
         sleep(duration)
+        play_obj.stop()
     else:
         play_obj.wait_done()
 
