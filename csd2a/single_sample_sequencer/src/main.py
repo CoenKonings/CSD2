@@ -24,16 +24,59 @@ def play_sound_n_times(n):
         play_sound(2)
 
 
-def user_input():
+def quarter_note_duration_from_bpm(bpm):
     """
-    Get a positive whole number from the user.
+    Given the bpm, calculate the duration of a quarter note in seconds.
     """
-    n = "-1"
+    return 60 / bpm
 
-    while not (n.isnumeric() and int(n) >= 0):
-        n = input("How many times should the sound be played? (enter a positive integer)\n> ")
 
-    return int(n)
+def note_duration_valid(duration):
+    """
+    Check if the given string represents a valid positive float.
+    """
+
+    try:
+        duration = float(duration)
+    except:
+        return False
+
+    if duration <= 0:
+        return False
+
+    return True
+
+
+def get_rhythm(n_plays):
+    """
+    Given the number of times a sample should be played, get the duration for
+    each play. Each duration is given using a number, where 1 is a quarter
+    note, 0.5 is an eighth note, 0.25 is a sixteenth, etc.
+    """
+    rhythm = []
+
+    while len(rhythm) < n_plays:
+        duration = input("Duration for note {}, where 1 is a quarter note:\n> ".format(len(rhythm) + 1))
+
+        if not note_duration_valid(duration):
+            print("Please enter a valid positive number. Example: 1.5")
+            continue
+
+        rhythm.append(float(duration))
+
+    return rhythm
+
+
+def get_int_greater_than_zero(prompt):
+    """
+    Get an integer greater than 0 from the user.
+    """
+    user_input = "-1"
+
+    while not (user_input.isnumeric() and int(user_input) > 0):
+        user_input = input(prompt)
+
+    return int(user_input)
 
 
 def main():
@@ -41,8 +84,10 @@ def main():
     Ask user how often a sound should be played and play the sound a given
     number of times.
     """
-    n = user_input()
-    play_sound_n_times(n)
+    n_plays = get_int_greater_than_zero("How many notes do you want to enter?\n> ")
+    rhythm = get_rhythm(n_plays)
+    bpm = get_int_greater_than_zero("At what bpm should the rhythm be played?\n> ")
+    quarter = quarter_note_duration_from_bpm(bpm)
 
 
 if __name__ == "__main__":
