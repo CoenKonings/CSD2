@@ -1,13 +1,14 @@
 import simpleaudio as sa
 from time import sleep
+from os.path import isfile
 
 
-def play_sound(duration=-1):
+def play_sound(duration=-1, sample_path="../samples/plokrkr.wav"):
     """
     Play sample.wav once. Wait until playback has finished.
     """
     # From https://simpleaudio.readthedocs.io/en/latest/
-    wave_obj = sa.WaveObject.from_wave_file("../samples/plokrkr.wav")
+    wave_obj = sa.WaveObject.from_wave_file(sample_path)
     play_obj = wave_obj.play()
 
     if duration >= 0:
@@ -16,14 +17,14 @@ def play_sound(duration=-1):
         play_obj.wait_done()
 
 
-def play_rhythm(rhythm, bpm):
+def play_rhythm(rhythm, bpm, sample_path):
     """
     Play the sample in the given rhythm at the given bpm.
     """
     quarter = quarter_note_duration_from_bpm(bpm)
 
     for note in rhythm:
-        play_sound(quarter * note)
+        play_sound(quarter * note, sample_path)
 
 
 def quarter_note_duration_from_bpm(bpm):
@@ -47,6 +48,18 @@ def note_duration_valid(duration):
         return False
 
     return True
+
+
+def get_sample_path():
+    """
+    Get the path to a .wav audio file from the user.
+    """
+    path = ""
+
+    while not (isfile(path) and path.endswith(".wav")):
+        path = input("Path to the sample to be played: (should be a .wav file)\n> ")
+
+    return path
 
 
 def get_rhythm(n_plays):
@@ -89,7 +102,8 @@ def main():
     n_plays = get_int_greater_than_zero("How many notes do you want to enter?\n> ")
     rhythm = get_rhythm(n_plays)
     bpm = get_int_greater_than_zero("At what bpm should the rhythm be played?\n> ")
-    play_rhythm(rhythm, bpm)
+    path_to_sample = get_sample_path()
+    play_rhythm(rhythm, bpm, path_to_sample)
 
 
 if __name__ == "__main__":
