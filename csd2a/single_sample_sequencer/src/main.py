@@ -96,8 +96,7 @@ def get_int_greater_than_zero(prompt):
 
 def main():
     """
-    Ask user how often a sound should be played and play the sound a given
-    number of times.
+    Play a rhythm defined by the user.
     """
     n_plays = get_int_greater_than_zero("How many notes do you want to enter?\n> ")
     rhythm = get_rhythm(n_plays)
