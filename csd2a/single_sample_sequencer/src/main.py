@@ -16,12 +16,14 @@ def play_sound(duration=-1):
         play_obj.wait_done()
 
 
-def play_sound_n_times(n):
+def play_rhythm(rhythm, bpm):
     """
-    Play sample.wav n times. Parameter n should be a positive integer.
+    Play the sample in the given rhythm at the given bpm.
     """
-    for _ in range(n):
-        play_sound(2)
+    quarter = quarter_note_duration_from_bpm(bpm)
+
+    for note in rhythm:
+        play_sound(quarter * note)
 
 
 def quarter_note_duration_from_bpm(bpm):
@@ -87,7 +89,7 @@ def main():
     n_plays = get_int_greater_than_zero("How many notes do you want to enter?\n> ")
     rhythm = get_rhythm(n_plays)
     bpm = get_int_greater_than_zero("At what bpm should the rhythm be played?\n> ")
-    quarter = quarter_note_duration_from_bpm(bpm)
+    play_rhythm(rhythm, bpm)
 
 
 if __name__ == "__main__":
