@@ -33,7 +33,7 @@ def quarter_note_duration_from_bpm(bpm):
 
 def note_duration_valid(duration):
     """
-    Check if the given string represents a valid positive float.
+    Check if the given string represents a valid float greater than 0.
     """
 
     try:
