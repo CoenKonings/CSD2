@@ -158,7 +158,8 @@ def main():
     bpm = bpm_input()
     rhythm = get_rhythm()
     timestamps_16th = durations_to_timestamps_16th(rhythm)
-    timestamps = timestamp_16th_to_timestamp_seconds(timestamps_16th)
+    timestamps = timestamp_16th_to_timestamp_seconds(timestamps_16th, bpm)
+    ic(timestamps)
     # TODO play rhythm
     # TODO multiple samples
     # TODO change tempo during playback
