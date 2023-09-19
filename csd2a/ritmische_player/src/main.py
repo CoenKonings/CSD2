@@ -32,14 +32,13 @@ def play_sound(duration=-1, sample_path="../samples/plokrkr.wav"):
         play_obj.wait_done()
 
 
-def play_rhythm(rhythm, bpm, sample_path):
+def play_rhythm(rhythm, sample_path):
     """
     Play the sample in the given rhythm at the given bpm.
     """
-    quarter = quarter_note_duration_from_bpm(bpm)
 
     for note in rhythm:
-        play_sound(quarter * note, sample_path)
+        play_sound(note, sample_path)
 
 
 def quarter_note_duration_from_bpm(bpm):
@@ -117,6 +116,9 @@ def main():
     rhythm = get_rhythm(n_plays)
     bpm = get_int_greater_than_zero("At what bpm should the rhythm be played?\n> ")
     path_to_sample = get_sample_path()
+    quarter_dur = quarter_note_duration_from_bpm(bpm)
+    # Calculate durations in seconds for rhythm.
+    rhythm = [note * quarter_dur for note in rhythm]
     play_rhythm(rhythm, bpm, path_to_sample)
 
 
