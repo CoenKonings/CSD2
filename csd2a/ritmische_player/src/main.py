@@ -1,3 +1,17 @@
+"""
+Author:         Coen Konings
+Date:           September 12, 2023
+Last edited by: Coen Konings
+On:             September 19, 2023
+
+main.py:
+Ask user how many notes they want to enter, after which the user will be able
+to enter note durations where 1 is a quarter note, 0.5 is an eighth, etc.
+After the notes are entered, the user can enter the BPM at which the rhythm
+should be played. Finally, the sample (wav) with which the sample should be
+played can be entered. The program then plays the rhythm using the given
+sample.
+"""
 import simpleaudio as sa
 from time import sleep
 from os.path import isfile
