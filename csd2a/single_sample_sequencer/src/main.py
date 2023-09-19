@@ -37,7 +37,6 @@ def play_rhythm(rhythm, sample_path):
     """
     Play the sample in the given rhythm at the given bpm.
     """
-
     for note in rhythm:
         play_sound(note, sample_path)
 
@@ -53,7 +52,6 @@ def note_duration_valid(duration):
     """
     Check if the given string represents a valid float greater than 0.
     """
-
     try:
         duration = float(duration)
     except:
@@ -141,12 +139,29 @@ def bpm_input():
     return 120 if user_input == "" else int(user_input)
 
 
+def durations_to_timestamps_16th(durations):
+    """
+    Given a list of durations where 1 is a quarter note, 0.5 is an eighth, etc.
+    calculate a list of timestamps.
+    """
+    total = 0
+    timestamps = []
+
+    for duration in durations:
+        timestamps.append(total)
+        total += duration * 4
+
+    return timestamps
+
+
 def main():
     """
     Play a rhythm defined by the user.
     """
     bpm = bpm_input()
     rhythm = get_rhythm()
+    timestamps_16th = durations_to_timestamps_16th(rhythm)
+    ic(timestamps_16th)
 
 
 if __name__ == "__main__":
