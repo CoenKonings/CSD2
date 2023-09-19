@@ -77,7 +77,7 @@ def get_sample_path():
     return path
 
 
-def get_rhythm(n_plays):
+def get_rhythm():
     """
     Given the number of times a sample should be played, get the duration for
     each play. Each duration is given using a number, where 1 is a quarter
@@ -85,8 +85,15 @@ def get_rhythm(n_plays):
     """
     rhythm = []
 
-    while len(rhythm) < n_plays:
-        duration = input("Duration for note {}, where 1 is a quarter note:\n> ".format(len(rhythm) + 1))
+    while True:
+        duration = input("Enter the duration for note {}, where 1 is a quarter note, or Q to stop entering notes.\n> ".format(len(rhythm) + 1))
+
+        if duration == "Q":
+            if len(rhythm) == 0:
+                print("Please enter at least one note.")
+                continue
+
+            break
 
         if not note_duration_valid(duration):
             print("Please enter a valid positive number. Example: 1.5")
@@ -135,7 +142,7 @@ def main():
     Play a rhythm defined by the user.
     """
     bpm = bpm_input()
-    ic(bpm)
+    rhythm = get_rhythm()
 
 
 if __name__ == "__main__":
