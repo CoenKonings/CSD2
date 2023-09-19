@@ -41,11 +41,11 @@ def play_rhythm(rhythm, sample_path):
         play_sound(note, sample_path)
 
 
-def quarter_note_duration_from_bpm(bpm):
+def sixteenth_note_duration_from_bpm(bpm):
     """
     Given the bpm, calculate the duration of a quarter note in seconds.
     """
-    return 60 / bpm
+    return 15 / bpm
 
 
 def note_duration_valid(duration):
@@ -154,6 +154,15 @@ def durations_to_timestamps_16th(durations):
     return timestamps
 
 
+def timestamp_16th_to_timestamp_seconds(timestamps_16th, bpm):
+    """
+    Given a list containing timestamps in sixteenth notes and the bpm, return
+    a list containing timestamps in seconds.
+    """
+    sixteenth_duration = sixteenth_note_duration_from_bpm(bpm)
+    return [sixteenth_duration * timestamp for timestamp in timestamps_16th]
+
+
 def main():
     """
     Play a rhythm defined by the user.
@@ -161,7 +170,11 @@ def main():
     bpm = bpm_input()
     rhythm = get_rhythm()
     timestamps_16th = durations_to_timestamps_16th(rhythm)
-    ic(timestamps_16th)
+    timestamps = timestamp_16th_to_timestamp_seconds(timestamps_16th)
+    # TODO play rhythm
+    # TODO multiple samples
+    # TODO change tempo during playback
+    # TODO repeat playback until user indicates they want to quit
 
 
 if __name__ == "__main__":
