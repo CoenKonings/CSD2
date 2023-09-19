@@ -114,18 +114,6 @@ def str_is_int_gt_zero(str):
     return str.isnumeric() and int(str) > 0
 
 
-def get_int_greater_than_zero(prompt):
-    """
-    Get an integer greater than 0 from the user.
-    """
-    user_input = "-1"
-
-    while not str_is_int_gt_zero(user_input):
-        user_input = input(prompt)
-
-    return int(user_input)
-
-
 def bpm_input():
     """
     Display the default bpm to the user. If the user wishes to change it, get
