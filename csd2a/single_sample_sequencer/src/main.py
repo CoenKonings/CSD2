@@ -15,6 +15,7 @@ sample.
 import simpleaudio as sa
 from time import sleep
 from os.path import isfile
+from icecream import ic
 
 
 def play_sound(duration=-1, sample_path="../samples/plokrkr.wav"):
@@ -32,14 +33,13 @@ def play_sound(duration=-1, sample_path="../samples/plokrkr.wav"):
         play_obj.wait_done()
 
 
-def play_rhythm(rhythm, bpm, sample_path):
+def play_rhythm(rhythm, sample_path):
     """
     Play the sample in the given rhythm at the given bpm.
     """
-    quarter = quarter_note_duration_from_bpm(bpm)
 
     for note in rhythm:
-        play_sound(quarter * note, sample_path)
+        play_sound(note, sample_path)
 
 
 def quarter_note_duration_from_bpm(bpm):
@@ -97,27 +97,45 @@ def get_rhythm(n_plays):
     return rhythm
 
 
+def str_is_int_gt_zero(str):
+    """
+    Return true if the given string represents an integer larger than 0. Return
+    false otherwise.
+    """
+    return str.isnumeric() and int(str) > 0
+
+
 def get_int_greater_than_zero(prompt):
     """
     Get an integer greater than 0 from the user.
     """
     user_input = "-1"
 
-    while not (user_input.isnumeric() and int(user_input) > 0):
+    while not str_is_int_gt_zero(user_input):
         user_input = input(prompt)
 
     return int(user_input)
+
+
+def bpm_input():
+    """
+    Display the default bpm to the user. If the user wishes to change it, get
+    the new bpm.
+    """
+    user_input = "-1"
+
+    while not str_is_int_gt_zero(user_input) and user_input != "":
+        user_input = input("Enter the tempo in bpm. Leave empty for 120bpm.\n>")
+
+    return 120 if user_input == "" else int(user_input)
 
 
 def main():
     """
     Play a rhythm defined by the user.
     """
-    n_plays = get_int_greater_than_zero("How many notes do you want to enter?\n> ")
-    rhythm = get_rhythm(n_plays)
-    bpm = get_int_greater_than_zero("At what bpm should the rhythm be played?\n> ")
-    path_to_sample = get_sample_path()
-    play_rhythm(rhythm, bpm, path_to_sample)
+    bpm = bpm_input()
+    ic(bpm)
 
 
 if __name__ == "__main__":
