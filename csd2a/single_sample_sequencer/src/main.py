@@ -86,7 +86,11 @@ def get_rhythm():
     rhythm = []
 
     while True:
-        duration = input("Enter the duration for note {}, where 1 is a quarter note, or Q to stop entering notes.\n> ".format(len(rhythm) + 1))
+        duration = input(
+            "Enter the duration for note {}, where 1 is a quarter note, or Q to stop entering notes.\n> ".format(
+                len(rhythm) + 1
+            )
+        )
 
         if duration == "Q":
             if len(rhythm) == 0:

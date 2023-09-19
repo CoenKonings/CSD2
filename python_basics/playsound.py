@@ -26,7 +26,9 @@ def user_input():
     n = "-1"
 
     while not (n.isnumeric() and int(n) >= 0):
-        n = input("How many times should the sound be played? (enter a positive integer)\n> ")
+        n = input(
+            "How many times should the sound be played? (enter a positive integer)\n> "
+        )
 
     return int(n)
 

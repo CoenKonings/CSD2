@@ -85,7 +85,11 @@ def get_rhythm(n_plays):
     rhythm = []
 
     while len(rhythm) < n_plays:
-        duration = input("Duration for note {}, where 1 is a quarter note:\n> ".format(len(rhythm) + 1))
+        duration = input(
+            "Duration for note {}, where 1 is a quarter note:\n> ".format(
+                len(rhythm) + 1
+            )
+        )
 
         if not note_duration_valid(duration):
             print("Please enter a valid positive number. Example: 1.5")
