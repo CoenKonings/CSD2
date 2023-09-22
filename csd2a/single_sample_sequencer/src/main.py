@@ -8,33 +8,40 @@ main.py:
 Given a tempo in BPM and a set of note durations, play the given rhythm.
 """
 import simpleaudio as sa
-from time import sleep
+from time import sleep, time
 from os.path import isfile
 from icecream import ic
 
 
-def play_sound(duration=-1, sample_path="../assets/sample.wav"):
+def play_sound():
     """
     Play sample.wav once. Wait for the given duration. If the given duration is
     less than 0, wait until playback has finished.
     """
     # From https://simpleaudio.readthedocs.io/en/latest/
-    wave_obj = sa.WaveObject.from_wave_file(sample_path)
+    wave_obj = sa.WaveObject.from_wave_file("../assets/sample.wav")
     play_obj = wave_obj.play()
 
-    if duration >= 0:
-        sleep(duration)
-        play_obj.stop()
-    else:
-        play_obj.wait_done()
 
+def play_rhythm(timestamps):
+    """
+    Play a rhythm using the given timestamps.
+    """
+    start_time = time()
+    done = False
+    i = 0
+    print("PLAYING")
 
-def play_rhythm(rhythm, sample_path):
-    """
-    Play the sample in the given rhythm at the given bpm.
-    """
-    for note in rhythm:
-        play_sound(note, sample_path)
+    while not done:
+        time_since_start = time() - start_time
+
+        if time_since_start >= timestamps[i]:
+            print(time_since_start)
+            play_sound()
+            i += 1
+            done = i >= len(timestamps)
+        else:
+            sleep(0.001)
 
 
 def sixteenth_note_duration_from_bpm(bpm):
@@ -66,25 +73,22 @@ def get_sample_path():
     path = ""
 
     while not (isfile(path) and path.endswith(".wav")):
-        path = input("Path to the sample to be played: (should be a .wav file)\n> ")
+        path = input("Path to the sample to be played: (should be a .wav file)\n>")
 
     return path
 
 
-def get_rhythm():
+def rhythm_input():
     """
     Given the number of times a sample should be played, get the duration for
     each play. Each duration is given using a number, where 1 is a quarter
     note, 0.5 is an eighth note, 0.25 is a sixteenth, etc.
     """
     rhythm = []
+    prompt = "Enter the duration for note {}, where 1 is a quarter note. Type Q to stop entering notes.\n>"
 
     while True:
-        duration = input(
-            "Enter the duration for note {}, where 1 is a quarter note, or Q to stop entering notes.\n> ".format(
-                len(rhythm) + 1
-            )
-        )
+        duration = input(prompt.format(len(rhythm) + 1))
 
         if duration == "Q":
             if len(rhythm) == 0:
@@ -138,7 +142,7 @@ def durations_to_timestamps_16th(durations):
     return timestamps
 
 
-def timestamp_16th_to_timestamp_seconds(timestamps_16th, bpm):
+def timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm):
     """
     Given a list containing timestamps in sixteenth notes and the bpm, return
     a list containing timestamps in seconds.
@@ -152,11 +156,10 @@ def main():
     Play a rhythm defined by the user.
     """
     bpm = bpm_input()
-    rhythm = get_rhythm()
+    rhythm = rhythm_input()
     timestamps_16th = durations_to_timestamps_16th(rhythm)
-    timestamps = timestamp_16th_to_timestamp_seconds(timestamps_16th, bpm)
-    ic(timestamps)
-    # TODO play rhythm
+    timestamps = timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm)
+    play_rhythm(timestamps)
     # TODO multiple samples
     # TODO change tempo during playback
     # TODO repeat playback until user indicates they want to quit
