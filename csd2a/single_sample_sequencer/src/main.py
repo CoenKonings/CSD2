@@ -11,6 +11,8 @@ import simpleaudio as sa
 from time import sleep, time
 from os.path import isfile
 from icecream import ic
+from queue import Queue
+import threading
 
 
 def play_sound():
@@ -23,7 +25,7 @@ def play_sound():
     play_obj = wave_obj.play()
 
 
-def play_rhythm(timestamps):
+def play_rhythm(timestamps, q):
     """
     Play a rhythm using the given timestamps.
     """
@@ -34,14 +36,18 @@ def play_rhythm(timestamps):
 
     while not done:
         time_since_start = time() - start_time
+        done = not q.empty()
 
         if time_since_start >= timestamps[i]:
             print(time_since_start)
             play_sound()
             i += 1
-            done = i >= len(timestamps)
         else:
             sleep(0.001)
+
+        if i >= len(timestamps):
+            start_time = time()
+            i = 0
 
 
 def sixteenth_note_duration_from_bpm(bpm):
@@ -159,9 +165,18 @@ def main():
     rhythm = rhythm_input()
     timestamps_16th = durations_to_timestamps_16th(rhythm)
     timestamps = timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm)
-    play_rhythm(timestamps)
-    # TODO multiple samples
+
+    q = Queue()
+    play_thread = threading.Thread(target=play_rhythm, args=[timestamps, q])
+    play_thread.start()
+
+    input("Press enter when you want the rhythm to stop playing.")
+    q.put("stop")
+
+    play_thread.join()
+
     # TODO change tempo during playback
+    # TODO multiple samples
     # TODO repeat playback until user indicates they want to quit
 
 
