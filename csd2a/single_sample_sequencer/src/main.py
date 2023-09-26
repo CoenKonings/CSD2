@@ -10,7 +10,6 @@ Given a tempo in BPM and a set of note durations, play the given rhythm.
 import simpleaudio as sa
 from time import sleep, time
 from os.path import isfile
-from icecream import ic
 from queue import Queue
 import threading
 
@@ -25,28 +24,41 @@ def play_sound():
     play_obj = wave_obj.play()
 
 
-def play_rhythm(timestamps, q):
+def play_rhythm(timestamps_16th, total_time_16th, bpm, q):
     """
     Play a rhythm using the given timestamps.
     """
+    timestamps = timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm)
+    total_time = total_time_16th * sixteenth_note_duration_from_bpm(bpm)
     start_time = time()
     done = False
     i = 0
-    print("PLAYING")
 
     while not done:
         time_since_start = time() - start_time
-        done = not q.empty()
+
+        try:
+            command = q.get(block=False)
+        except:
+            command = None
+
+        if command == "stop":
+            done = True
+        elif isinstance(command, int):
+            bpm = command
+            timestamps = timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm)
+            total_time = total_time_16th * sixteenth_note_duration_from_bpm(bpm)
+            start_time = time() - timestamps[(i-1) % len(timestamps)] + 0.001
+            continue
 
         if time_since_start >= timestamps[i]:
-            print(time_since_start)
             play_sound()
             i += 1
         else:
             sleep(0.001)
 
-        if i >= len(timestamps):
-            start_time = time()
+        if i == len(timestamps):
+            start_time += total_time
             i = 0
 
 
@@ -145,7 +157,7 @@ def durations_to_timestamps_16th(durations):
         timestamps.append(total)
         total += duration * 4
 
-    return timestamps
+    return timestamps, total
 
 
 def timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm):
@@ -157,21 +169,36 @@ def timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm):
     return [sixteenth_duration * timestamp for timestamp in timestamps_16th]
 
 
+def input_while_playing(queue):
+    """
+    Get input from the user and send it into the queue.
+    """
+    while True:
+        command = input("Q to stop playing, or a positive integer to change the BPM.")
+
+        if (command == "Q"):
+            queue.put("stop")
+            break
+        elif str_is_int_gt_zero(command):
+            queue.put(int(command))
+
+
 def main():
     """
     Play a rhythm defined by the user.
     """
     bpm = bpm_input()
     rhythm = rhythm_input()
-    timestamps_16th = durations_to_timestamps_16th(rhythm)
-    timestamps = timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm)
+    timestamps_16th, total_time_16th = durations_to_timestamps_16th(rhythm)
 
     q = Queue()
-    play_thread = threading.Thread(target=play_rhythm, args=[timestamps, q])
-    play_thread.start()
+    play_thread = threading.Thread(target=play_rhythm, args=[timestamps_16th, total_time_16th, bpm, q])
 
-    input("Press enter when you want the rhythm to stop playing.")
-    q.put("stop")
+    try:
+        play_thread.start()
+        input_while_playing(q)
+    except KeyboardInterrupt:
+        q.put("stop")
 
     play_thread.join()
 
