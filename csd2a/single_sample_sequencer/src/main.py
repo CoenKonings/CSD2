@@ -14,17 +14,17 @@ from queue import Queue
 import threading
 
 
-def play_sound():
+def play_sound(sample_path):
     """
     Play sample.wav once. Wait for the given duration. If the given duration is
     less than 0, wait until playback has finished.
     """
     # From https://simpleaudio.readthedocs.io/en/latest/
-    wave_obj = sa.WaveObject.from_wave_file("../assets/sample.wav")
-    play_obj = wave_obj.play()
+    wave_obj = sa.WaveObject.from_wave_file(sample_path)
+    wave_obj.play()
 
 
-def play_rhythm(timestamps_16th, total_time_16th, bpm, q):
+def play_rhythm(timestamps_16th, total_time_16th, bpm, sample_path, q):
     """
     Play a rhythm using the given timestamps.
     """
@@ -52,7 +52,7 @@ def play_rhythm(timestamps_16th, total_time_16th, bpm, q):
             continue
 
         if time_since_start >= timestamps[i]:
-            play_sound()
+            play_sound(sample_path)
             i += 1
         else:
             sleep(0.001)
@@ -84,7 +84,7 @@ def note_duration_valid(duration):
     return True
 
 
-def get_sample_path():
+def sample_path_input():
     """
     Get the path to a .wav audio file from the user.
     """
@@ -174,7 +174,7 @@ def input_while_playing(queue):
     Get input from the user and send it into the queue.
     """
     while True:
-        command = input("Q to stop playing, or a positive integer to change the BPM.")
+        command = input("Q to stop playing, or a positive integer to change the BPM.\n>")
 
         if (command == "Q"):
             queue.put("stop")
@@ -189,10 +189,11 @@ def main():
     """
     bpm = bpm_input()
     rhythm = rhythm_input()
+    sample_path = sample_path_input()
     timestamps_16th, total_time_16th = durations_to_timestamps_16th(rhythm)
 
     q = Queue()
-    play_thread = threading.Thread(target=play_rhythm, args=[timestamps_16th, total_time_16th, bpm, q])
+    play_thread = threading.Thread(target=play_rhythm, args=[timestamps_16th, total_time_16th, bpm, sample_path, q])
 
     try:
         play_thread.start()
@@ -201,6 +202,7 @@ def main():
         q.put("stop")
 
     play_thread.join()
+    print("Bye!")
 
     # TODO change tempo during playback
     # TODO multiple samples
