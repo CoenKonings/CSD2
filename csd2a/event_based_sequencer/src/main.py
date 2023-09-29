@@ -14,6 +14,35 @@ from queue import Queue
 import threading
 
 
+class NoteEvent:
+    """
+    A class that holds information on a note event, including timestamp, audio
+    file, duration and velocity.
+    """
+
+    def __init__(self, timestamp, audio_file, duration, velocity):
+        """
+        Initialize a note object.
+        """
+        self.timestamp = timestamp
+        self.audio_file = audio_file
+        self.duration = duration
+        self.velocity = velocity
+
+    def __str__(self):
+        return "<Note event object. Timestamp: {}. Audio file: {}. Duration: {}. Velocity: {}.>".format(self.timestamp, self.audio_file, self.duration, self.velocity)
+
+    def play_if_ready(self, time_since_start):
+        """
+        Play this event's sound if current time exceeds this note event's
+        timestamp.
+
+        TODO: use threads to stop it at the right time to enable rests.
+        """
+        if time_since_start >= self.timestamp:
+            self.audio_file.play()
+
+
 def play_sound(sample_path):
     """
     Play sample.wav once. Wait for the given duration. If the given duration is
