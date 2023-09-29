@@ -1,8 +1,8 @@
 """
 Author:         Coen Konings
-Date:           September 12, 2023
+Date:           September 19, 2023
 Last edited by: Coen Konings
-On:             September 19, 2023
+On:             September 29, 2023
 
 main.py:
 Given a tempo in BPM and a set of note durations, play the given rhythm.
