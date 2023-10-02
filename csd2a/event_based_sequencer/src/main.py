@@ -5,7 +5,11 @@ Last edited by: Coen Konings
 On:             September 29, 2023
 
 main.py:
-Given a tempo in BPM and a set of note durations, play the given rhythm.
+Given a tempo in BPM, a set of audio files and a set of note durations, play a
+rhythm.
+
+TODO
+- Create Sequencer class.
 """
 import simpleaudio as sa
 from time import sleep, time
@@ -26,39 +30,63 @@ class NoteEvent:
         """
         self.timestamp = timestamp
         self.audio_file = audio_file
-        self.duration = duration
+        self.duration = duration # Duration in 16th notes.
         self.velocity = velocity
 
     def __str__(self):
+        """
+        Return a string representation of this note event.
+        """
         return "<Note event object. Timestamp: {}. Audio file: {}. Duration: {}. Velocity: {}.>".format(self.timestamp, self.audio_file, self.duration, self.velocity)
 
-    def play_if_ready(self, time_since_start):
+    def __lt__(self, other):
+        """
+        Return true if this note event's timestamp is smaller than the other's.
+        Return false otherwise.
+        """
+        return self.timestamp < other.timestamp
+
+    def __eq__(self, other):
+        """
+        Return true if both note events occur simultaneously.
+        """
+        return self.timestamp == other.timestamp
+
+    def sixteenth_duration(self, bpm):
+        """
+        Return the duration of a sixteenth note.
+        """
+        return 15 / bpm
+
+    def timestamp_in_seconds(self, bpm):
+        """
+        Given a list containing timestamps in sixteenth notes and the bpm, return
+        a list containing timestamps in seconds.
+        """
+        return self.sixteenth_duration(bpm) * self.timestamp
+
+    def duration_in_seconds(self, bpm):
+        return self.sixteenth_duration(bpm) * self.duration
+
+    def is_ready_to_play(self, time_since_start, bpm):
+        """
+        Return True if this NoteEvent is ready to be played. Return False
+        otherwise.
+        """
+        return self.timestamp_in_seconds(bpm) <= time_since_start
+
+    def play(self):
         """
         Play this event's sound if current time exceeds this note event's
         timestamp.
-
-        TODO: use threads to stop it at the right time to enable rests.
         """
-        if time_since_start >= self.timestamp:
-            self.audio_file.play()
+        self.audio_file.play()
 
 
-def play_sound(sample_path):
-    """
-    Play sample.wav once. Wait for the given duration. If the given duration is
-    less than 0, wait until playback has finished.
-    """
-    # From https://simpleaudio.readthedocs.io/en/latest/
-    wave_obj = sa.WaveObject.from_wave_file(sample_path)
-    wave_obj.play()
-
-
-def play_rhythm(timestamps_16th, total_time_16th, bpm, sample_path, q):
+def play_rhythm(note_events, bpm, q):
     """
     Play a rhythm using the given timestamps.
     """
-    timestamps = timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm)
-    total_time = total_time_16th * sixteenth_note_duration_from_bpm(bpm)
     start_time = time()
     done = False
     i = 0
@@ -75,27 +103,18 @@ def play_rhythm(timestamps_16th, total_time_16th, bpm, sample_path, q):
             done = True
         elif isinstance(command, int):
             bpm = command
-            timestamps = timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm)
-            total_time = total_time_16th * sixteenth_note_duration_from_bpm(bpm)
-            start_time = time() - timestamps[(i-1) % len(timestamps)] + 0.001
+            start_time = time() - note_events[i].timestamp_in_seconds(bpm) + 0.001
             continue
 
-        if time_since_start >= timestamps[i]:
-            play_sound(sample_path)
+        if note_events[i].is_ready_to_play(time_since_start, bpm):
+            note_events[i].play()
             i += 1
         else:
             sleep(0.001)
 
-        if i == len(timestamps):
-            start_time += total_time
+        if i == len(note_events):
+            start_time = time() + note_events[-1].duration_in_seconds(bpm)
             i = 0
-
-
-def sixteenth_note_duration_from_bpm(bpm):
-    """
-    Given the bpm, calculate the duration of a quarter note in seconds.
-    """
-    return 15 / bpm
 
 
 def note_duration_valid(duration):
@@ -137,7 +156,7 @@ def rhythm_input():
     while True:
         duration = input(prompt.format(len(rhythm) + 1))
 
-        if duration == "Q":
+        if duration.lower() == "q":
             if len(rhythm) == 0:
                 print("Please enter at least one note.")
                 continue
@@ -186,16 +205,7 @@ def durations_to_timestamps_16th(durations):
         timestamps.append(total)
         total += duration * 4
 
-    return timestamps, total
-
-
-def timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm):
-    """
-    Given a list containing timestamps in sixteenth notes and the bpm, return
-    a list containing timestamps in seconds.
-    """
-    sixteenth_duration = sixteenth_note_duration_from_bpm(bpm)
-    return [sixteenth_duration * timestamp for timestamp in timestamps_16th]
+    return timestamps
 
 
 def input_while_playing(queue):
@@ -205,11 +215,39 @@ def input_while_playing(queue):
     while True:
         command = input("Q to stop playing, or a positive integer to change the BPM.\n>")
 
-        if (command == "Q"):
+        if (command.lower() == "q"):
             queue.put("stop")
             break
         elif str_is_int_gt_zero(command):
             queue.put(int(command))
+
+
+def note_events_input():
+    """
+    Given an audio file and a rhythm, create the appropriate note events.
+    Repeat until the user indicates they are done.
+    """
+    done = False
+    note_events = []
+
+    while not done:
+        sample_path = sample_path_input()
+        rhythm = rhythm_input()
+        timestamps_16th = durations_to_timestamps_16th(rhythm)
+
+        for i in range(len(rhythm)):
+            note_events.append(NoteEvent(timestamps_16th[i], sa.WaveObject.from_wave_file(sample_path), rhythm[i] * 4, 100))
+
+        done = input("Enter a rhythm for another sample? Y for yes, any other key for no.\n>").lower() != "y"
+
+    return note_events
+
+
+def sort_note_events(note_events):
+    """
+    Sort a list of note events by ascending timestamps.
+    """
+    return sorted(note_events, reverse=False)
 
 
 def main():
@@ -217,12 +255,11 @@ def main():
     Play a rhythm defined by the user.
     """
     bpm = bpm_input()
-    rhythm = rhythm_input()
-    sample_path = sample_path_input()
-    timestamps_16th, total_time_16th = durations_to_timestamps_16th(rhythm)
+    note_events = note_events_input()
+    note_events = sort_note_events(note_events)
 
     q = Queue()
-    play_thread = threading.Thread(target=play_rhythm, args=[timestamps_16th, total_time_16th, bpm, sample_path, q])
+    play_thread = threading.Thread(target=play_rhythm, args=[note_events, bpm, q])
 
     try:
         play_thread.start()
@@ -232,10 +269,6 @@ def main():
 
     play_thread.join()
     print("Bye!")
-
-    # TODO change tempo during playback
-    # TODO multiple samples
-    # TODO repeat playback until user indicates they want to quit
 
 
 if __name__ == "__main__":
