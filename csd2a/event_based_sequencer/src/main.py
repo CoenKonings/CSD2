@@ -2,7 +2,7 @@
 Author:         Coen Konings
 Date:           September 29, 2023
 Last edited by: Coen Konings
-On:             September 29, 2023
+On:             October 2, 2023
 
 main.py:
 Given a tempo in BPM, a set of audio files and a set of note durations, play a
@@ -243,21 +243,7 @@ def note_events_input():
     return note_events
 
 
-def sort_note_events(note_events):
-    """
-    Sort a list of note events by ascending timestamps.
-    """
-    return sorted(note_events, reverse=False)
-
-
-def main():
-    """
-    Play a rhythm defined by the user.
-    """
-    bpm = bpm_input()
-    note_events = note_events_input()
-    note_events = sort_note_events(note_events)
-
+def start_play_thread(note_events, bpm):
     q = Queue()
     play_thread = threading.Thread(target=play_rhythm, args=[note_events, bpm, q])
 
@@ -269,6 +255,16 @@ def main():
 
     play_thread.join()
     print("Bye!")
+
+
+def main():
+    """
+    Play a rhythm defined by the user.
+    """
+    bpm = bpm_input()
+    note_events = note_events_input()
+    note_events.sort()
+    start_play_thread(note_events, bpm)
 
 
 if __name__ == "__main__":
