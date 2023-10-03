@@ -6,6 +6,7 @@ On:             October 3, 2023
 
 sequencer.py:
 Implement all classes necessary to run a sequencer.
+TODO move functionalities from main.py to appropriate class.
 """
 
 
