@@ -2,7 +2,7 @@
 Author:         Coen Konings
 Date:           September 29, 2023
 Last edited by: Coen Konings
-On:             October 2, 2023
+On:             October 3, 2023
 
 main.py:
 Play a default example rhythm on the sequencer in main.py.
@@ -10,7 +10,8 @@ Play a default example rhythm on the sequencer in main.py.
 NOTE: For this program to work, three audio files should be present in
 ../assets. These files should be called kick.wav, snare.wav and hat.wav.
 """
-from main import start_play_thread, NoteEvent
+from main import start_play_thread
+from sequencer import NoteEvent
 import simpleaudio as sa
 from random import random
 
