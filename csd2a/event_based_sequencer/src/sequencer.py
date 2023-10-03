@@ -75,3 +75,30 @@ class NoteEvent:
         """
         self.audio_file.play()
         print(self)
+
+
+class SequencerTrack:
+    def __init__(self, length, audio_file):
+        self.length = length
+        self.note_events = []
+        self.audio_file = audio_file
+        self.note_index = 0
+
+    def add_note(self, timestamp, audio_file, duration, velocity, replace=False):
+        """
+        Add a note event. If a note event exists at the given timestamp and
+        replace is False, do not insert the new note event. If replace is True,
+        replace the old note event with the new note event.
+        """
+        if any(note_event.timestamp == timestamp for note_event in self.note_events):
+            if replace:
+                self.note_events = list(filter(lambda note_event: note_event.timestamp != timestamp, self.note_events))
+            else:
+                return
+
+        self.note_events.append(NoteEvent(timestamp, audio_file, duration, velocity))
+
+
+class Sequencer:
+    def __init__(self):
+        self.tracks = []
