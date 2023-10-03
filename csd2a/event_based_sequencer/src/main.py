@@ -146,9 +146,11 @@ def input_while_playing(queue):
     Get input from the user and send it into the queue.
     """
     while True:
-        command = input("Q to stop playing, or a positive integer to change the BPM.\n>")
+        command = input(
+            "Q to stop playing, or a positive integer to change the BPM.\n>"
+        )
 
-        if (command.lower() == "q"):
+        if command.lower() == "q":
             queue.put("stop")
             break
         elif str_is_int_gt_zero(command):
@@ -169,9 +171,21 @@ def note_events_input():
         timestamps_16th = durations_to_timestamps_16th(rhythm)
 
         for i in range(len(rhythm)):
-            note_events.append(NoteEvent(timestamps_16th[i], sa.WaveObject.from_wave_file(sample_path), rhythm[i] * 4, 100))
+            note_events.append(
+                NoteEvent(
+                    timestamps_16th[i],
+                    sa.WaveObject.from_wave_file(sample_path),
+                    rhythm[i] * 4,
+                    100,
+                )
+            )
 
-        done = input("Enter a rhythm for another sample? Y for yes, any other key for no.\n>").lower() != "y"
+        done = (
+            input(
+                "Enter a rhythm for another sample? Y for yes, any other key for no.\n>"
+            ).lower()
+            != "y"
+        )
 
     return note_events
 

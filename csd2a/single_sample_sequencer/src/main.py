@@ -48,7 +48,7 @@ def play_rhythm(timestamps_16th, total_time_16th, bpm, sample_path, q):
             bpm = command
             timestamps = timestamps_16th_to_timestamps_seconds(timestamps_16th, bpm)
             total_time = total_time_16th * sixteenth_note_duration_from_bpm(bpm)
-            start_time = time() - timestamps[(i-1) % len(timestamps)] + 0.001
+            start_time = time() - timestamps[(i - 1) % len(timestamps)] + 0.001
             continue
 
         if time_since_start >= timestamps[i]:
@@ -174,9 +174,11 @@ def input_while_playing(queue):
     Get input from the user and send it into the queue.
     """
     while True:
-        command = input("Q to stop playing, or a positive integer to change the BPM.\n>")
+        command = input(
+            "Q to stop playing, or a positive integer to change the BPM.\n>"
+        )
 
-        if (command == "Q"):
+        if command == "Q":
             queue.put("stop")
             break
         elif str_is_int_gt_zero(command):
@@ -193,7 +195,9 @@ def main():
     timestamps_16th, total_time_16th = durations_to_timestamps_16th(rhythm)
 
     q = Queue()
-    play_thread = threading.Thread(target=play_rhythm, args=[timestamps_16th, total_time_16th, bpm, sample_path, q])
+    play_thread = threading.Thread(
+        target=play_rhythm, args=[timestamps_16th, total_time_16th, bpm, sample_path, q]
+    )
 
     try:
         play_thread.start()

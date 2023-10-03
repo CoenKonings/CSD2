@@ -67,7 +67,9 @@ def main():
     """
     Generate a random rhythm and play it until the user wants to stop playing.
     """
-    note_events = generate_kick_pattern() + generate_snare_pattern() + generate_hat_pattern()
+    note_events = (
+        generate_kick_pattern() + generate_snare_pattern() + generate_hat_pattern()
+    )
     note_events.sort()
     bpm = random() * 60 + 70
     start_play_thread(note_events, bpm)

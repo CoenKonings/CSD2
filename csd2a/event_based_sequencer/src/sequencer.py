@@ -23,14 +23,16 @@ class NoteEvent:
         """
         self.timestamp = timestamp
         self.audio_file = audio_file
-        self.duration = duration # Duration in 16th notes.
+        self.duration = duration  # Duration in 16th notes.
         self.velocity = velocity
 
     def __str__(self):
         """
         Return a string representation of this note event.
         """
-        return "<Note event object. Timestamp: {}. Audio file: {}. Duration: {}. Velocity: {}.>".format(self.timestamp, self.audio_file, self.duration, self.velocity)
+        return "<Note event object. Timestamp: {}. Audio file: {}. Duration: {}. Velocity: {}.>".format(
+            self.timestamp, self.audio_file, self.duration, self.velocity
+        )
 
     def __lt__(self, other):
         """
@@ -92,7 +94,12 @@ class SequencerTrack:
         """
         if any(note_event.timestamp == timestamp for note_event in self.note_events):
             if replace:
-                self.note_events = list(filter(lambda note_event: note_event.timestamp != timestamp, self.note_events))
+                self.note_events = list(
+                    filter(
+                        lambda note_event: note_event.timestamp != timestamp,
+                        self.note_events,
+                    )
+                )
             else:
                 return
 
