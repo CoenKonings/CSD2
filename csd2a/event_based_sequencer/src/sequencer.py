@@ -11,15 +11,16 @@ Implement all classes necessary to run a sequencer.
 
 class NoteEvent:
     """
-    A class that holds information on a note event, including timestamp, audio
-    file, duration and velocity.
+    Note events hold all relevant information on rhythmic notes, such as
+    velocity, timestamp and duration.
     """
 
     def __init__(self, timestamp, audio_file, duration, velocity):
         """
         Initialize a note object given the timestamp in 16th notes, the audio
         file to be played, the duration in 16th notes, and the velocity (a
-        number from 0 to 127)
+        number from 0 to 127).
+        TODO Move audio file to sequencertrack?
         """
         self.timestamp = timestamp
         self.audio_file = audio_file
@@ -37,13 +38,14 @@ class NoteEvent:
     def __lt__(self, other):
         """
         Return true if this note event's timestamp is smaller than the other's.
-        Return false otherwise.
+        Return false otherwise. This function enables sorting by timestamp.
         """
         return self.timestamp < other.timestamp
 
     def __eq__(self, other):
         """
-        Return true if both note events occur simultaneously.
+        Return true if both note events occur simultaneously. This function
+        enables sorting by timestamp.
         """
         return self.timestamp == other.timestamp
 
@@ -61,6 +63,10 @@ class NoteEvent:
         return self.sixteenth_duration(bpm) * self.timestamp
 
     def duration_in_seconds(self, bpm):
+        """
+        Given a bpm, calculate the duration of a sixteenth note.
+        TODO Move to sequencer class probably.
+        """
         return self.sixteenth_duration(bpm) * self.duration
 
     def is_ready_to_play(self, time_since_start, bpm):
@@ -74,13 +80,23 @@ class NoteEvent:
         """
         Play this event's sound if current time exceeds this note event's
         timestamp.
+        TODO Move to sequencertrack?
         """
         self.audio_file.play()
         print(self)
 
 
 class SequencerTrack:
+    """
+    A sequencer track is used to play and track the note events of a rhythm.
+    Each sequencer track is dedicated to a single rhythmic instrument with a
+    single audio file.
+    """
+
     def __init__(self, length, audio_file):
+        """
+        Initialize a sequencer track given its length and an audio file.
+        """
         self.length = length
         self.note_events = []
         self.audio_file = audio_file
@@ -107,5 +123,14 @@ class SequencerTrack:
 
 
 class Sequencer:
+    """
+    The sequencer is the brain and face of the system. It will keep track of
+    time, control the tracks / rhythms and handle user input.
+    """
+
     def __init__(self):
+        """
+        Initialize the sequencer by creating an empty list of sequencer
+        tracks.
+        """
         self.tracks = []
