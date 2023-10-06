@@ -8,6 +8,9 @@ sequencer.py:
 Implement all classes necessary to run a sequencer.
 TODO move functionalities from main.py to appropriate class.
 """
+import simpleaudio as sa
+from helpers import str_is_int_gt_zero, note_duration_valid, durations_to_timestamps_16th
+from os.path import isfile
 
 
 class NoteEvent:
@@ -91,7 +94,7 @@ class SequencerTrack:
     """
     A sequencer track is used to play and track the note events of a rhythm.
     Each sequencer track is dedicated to a single rhythmic instrument with a
-    single audio file.
+    single audio file. Sequencer tracks are mono.
     """
 
     def __init__(self, length, audio_file):
@@ -103,7 +106,7 @@ class SequencerTrack:
         self.audio_file = audio_file
         self.note_index = 0
 
-    def add_note(self, timestamp, audio_file, duration, velocity, replace=False):
+    def add_note(self, timestamp, duration, velocity, replace=False):
         """
         Add a note event. If a note event exists at the given timestamp and
         replace is False, do not insert the new note event. If replace is True,
@@ -120,7 +123,7 @@ class SequencerTrack:
             else:
                 return
 
-        self.note_events.append(NoteEvent(timestamp, audio_file, duration, velocity))
+        self.note_events.append(NoteEvent(timestamp, self.audio_file, duration, velocity))
 
 
 class Sequencer:
@@ -135,3 +138,80 @@ class Sequencer:
         tracks.
         """
         self.tracks = []
+        self.bpm = 120
+
+    def bpm_input(self):
+        """
+        Display the default bpm to the user. If the user wishes to change it, get
+        the new bpm.
+        """
+        user_input = "-1"
+
+        while not str_is_int_gt_zero(user_input) and user_input != "":
+            user_input = input("Enter the tempo in bpm. Leave empty for {}bpm.\n>".format(self.bpm))
+
+        if user_input != "":
+            self.bpm = int(user_input)
+
+    def rhythm_input(self):
+        """
+        Given the number of times a sample should be played, get the duration for
+        each play. Each duration is given using a number, where 1 is a quarter
+        note, 0.5 is an eighth note, 0.25 is a sixteenth, etc.
+        """
+        rhythm = []
+        prompt = "Enter the duration for note {}, where 1 is a quarter note. Type Q to stop entering notes.\n>"
+
+        while True:
+            duration = input(prompt.format(len(rhythm) + 1))
+
+            if duration.lower() == "q":
+                if len(rhythm) == 0:
+                    print("Please enter at least one note.")
+                    continue
+
+                break
+
+            if not note_duration_valid(duration):
+                print("Please enter a valid positive number. Example: 1.5")
+                continue
+
+            rhythm.append(float(duration))
+
+        return rhythm
+
+    def audio_file_input(self):
+        """
+        Get the path to a .wav audio file from the user and set the given file
+        as this track's audio file.
+        """
+        path = ""
+
+        while not (isfile(path) and path.endswith(".wav")):
+            path = input("Path to the sample to be played: (should be a .wav file)\n>")
+
+        return sa.WaveObject.from_wave_file(path)
+
+    def notes_input(self):
+        """
+        Given an audio file and a rhythm, create the appropriate note events.
+        Repeat until the user indicates they are done.
+        """
+        done = False
+
+        while not done:
+            audio_file = self.audio_file_input()
+            rhythm = self.rhythm_input()
+            timestamps_16th = durations_to_timestamps_16th(rhythm)
+            track = SequencerTrack(16, audio_file)
+            self.tracks.append(track)
+
+            for i in range(len(rhythm)):
+                track.add_note(timestamps_16th[i], rhythm[i], 100)
+
+            done = (
+                input(
+                    "Enter another sequencer track? Y for yes, any other key for no.\n>"
+                ).lower()
+                != "y"
+            )
