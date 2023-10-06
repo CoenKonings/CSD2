@@ -94,6 +94,7 @@ class SequencerTrack:
         replace is False, do not insert the new note event. If replace is True,
         replace the old note event with the new note event.
         """
+
         if any(note_event.timestamp == timestamp for note_event in self.note_events):
             if replace:
                 self.note_events = list(
@@ -118,6 +119,9 @@ class SequencerTrack:
         if self.note_events[self.note_index].timestamp == self.sixteenth_index:
             self.note_events[self.note_index].play()
             self.note_index = (self.note_index + 1) % len(self.note_events)
+
+        if self.note_events[self.note_index].timestamp >= self.length:
+            self.note_index = 0
 
 
 class Sequencer:
