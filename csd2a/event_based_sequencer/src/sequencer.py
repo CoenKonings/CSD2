@@ -9,7 +9,11 @@ Implement all classes necessary to run a sequencer.
 TODO move functionalities from main.py to appropriate class.
 """
 import simpleaudio as sa
-from helpers import str_is_int_gt_zero, note_duration_valid, durations_to_timestamps_16th
+from helpers import (
+    str_is_int_gt_zero,
+    note_duration_valid,
+    durations_to_timestamps_16th,
+)
 from os.path import isfile
 
 
@@ -123,7 +127,9 @@ class SequencerTrack:
             else:
                 return
 
-        self.note_events.append(NoteEvent(timestamp, self.audio_file, duration, velocity))
+        self.note_events.append(
+            NoteEvent(timestamp, self.audio_file, duration, velocity)
+        )
 
 
 class Sequencer:
@@ -148,7 +154,9 @@ class Sequencer:
         user_input = "-1"
 
         while not str_is_int_gt_zero(user_input) and user_input != "":
-            user_input = input("Enter the tempo in bpm. Leave empty for {}bpm.\n>".format(self.bpm))
+            user_input = input(
+                "Enter the tempo in bpm. Leave empty for {}bpm.\n>".format(self.bpm)
+            )
 
         if user_input != "":
             self.bpm = int(user_input)
