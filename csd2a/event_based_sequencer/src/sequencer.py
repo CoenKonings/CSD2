@@ -6,15 +6,17 @@ On:             October 3, 2023
 
 sequencer.py:
 Implement all classes necessary to run a sequencer.
-TODO move functionalities from main.py to appropriate class.
 """
 import simpleaudio as sa
+import threading
+import time
 from helpers import (
     str_is_int_gt_zero,
     note_duration_valid,
     durations_to_timestamps_16th,
 )
 from os.path import isfile
+from queue import Queue
 
 
 class NoteEvent:
@@ -88,7 +90,7 @@ class NoteEvent:
         """
         Play this event's sound if current time exceeds this note event's
         timestamp.
-        TODO Move to sequencertrack?
+        TODO Move audio file to sequencertrack?
         """
         self.audio_file.play()
         print(self)
@@ -109,6 +111,7 @@ class SequencerTrack:
         self.note_events = []
         self.audio_file = audio_file
         self.note_index = 0
+        self.sixteenth_index = 0
 
     def add_note(self, timestamp, duration, velocity, replace=False):
         """
@@ -127,9 +130,19 @@ class SequencerTrack:
             else:
                 return
 
-        self.note_events.append(
-            NoteEvent(timestamp, self.audio_file, duration, velocity)
-        )
+        note_event = NoteEvent(timestamp, self.audio_file, duration, velocity)
+        self.note_events.append(note_event)
+        self.note_events.sort()
+
+    def step(self):
+        """
+        Step the sequencer track one sixteenth.
+        """
+        self.sixteenth_index = (self.sixteenth_index + 1) % self.length
+
+        if self.note_events[self.note_index].timestamp == self.sixteenth_index:
+            self.note_events[self.note_index].play()
+            self.note_index = (self.note_index + 1) % len(self.note_events)
 
 
 class Sequencer:
@@ -145,6 +158,8 @@ class Sequencer:
         """
         self.tracks = []
         self.bpm = 120
+        self.sixteenth_duration = 15 / self.bpm
+        self.queue = Queue()
 
     def bpm_input(self):
         """
@@ -160,12 +175,14 @@ class Sequencer:
 
         if user_input != "":
             self.bpm = int(user_input)
+            self.sixteenth_duration = 15 / self.bpm
 
     def rhythm_input(self):
         """
         Given the number of times a sample should be played, get the duration for
         each play. Each duration is given using a number, where 1 is a quarter
         note, 0.5 is an eighth note, 0.25 is a sixteenth, etc.
+        TODO: duration in sixteenths
         """
         rhythm = []
         prompt = "Enter the duration for note {}, where 1 is a quarter note. Type Q to stop entering notes.\n>"
@@ -223,3 +240,63 @@ class Sequencer:
                 ).lower()
                 != "y"
             )
+
+    def input_while_playing(self):
+        """
+        Get input from the user and send it into the queue.
+        """
+        while True:
+            command = input(
+                "Q to stop playing, or a positive integer to change the BPM.\n>"
+            )
+
+            if command.lower() == "q":
+                self.queue.put("stop")
+                break
+            elif str_is_int_gt_zero(command):
+                self.queue.put(int(command))
+
+    def play(self):
+        """
+        Play a rhythm using the given timestamps.
+        """
+        start_time = time.time()
+        done = False
+        n_sixteenths = 0
+
+        while not done:
+            time_since_start = time.time() - start_time
+
+            try:
+                command = self.queue.get(block=False)
+            except:
+                command = None
+
+            if command == "stop":
+                done = True
+            elif isinstance(command, int):
+                self.bpm = command
+                start_time = time.time() + 0.001
+                n_sixteenths = 1
+                continue
+
+            if time_since_start - n_sixteenths * self.sixteenth_duration > 0:
+                [track.step() for track in self.tracks]
+                n_sixteenths += 1
+            else:
+                time.sleep(0.001)
+
+    def start(self):
+        """
+        Start playing the sequences.
+        """
+        play_thread = threading.Thread(target=self.play)
+
+        try:
+            play_thread.start()
+            self.input_while_playing()
+        except KeyboardInterrupt:
+            self.queue.put("stop")
+
+        play_thread.join()
+        print("Bye!")
