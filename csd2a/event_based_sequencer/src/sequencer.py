@@ -2,7 +2,7 @@
 Author:         Coen Konings
 Date:           October 3, 2023
 Last edited by: Coen Konings
-On:             October 3, 2023
+On:             October 6, 2023
 
 sequencer.py:
 Implement all classes necessary to run a sequencer.

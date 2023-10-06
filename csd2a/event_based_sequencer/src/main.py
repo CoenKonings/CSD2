@@ -2,7 +2,7 @@
 Author:         Coen Konings
 Date:           September 29, 2023
 Last edited by: Coen Konings
-On:             October 3, 2023
+On:             October 6, 2023
 
 main.py:
 Given a tempo in BPM, a set of audio files and a set of note durations, play a

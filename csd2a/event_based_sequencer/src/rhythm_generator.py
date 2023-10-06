@@ -1,8 +1,9 @@
 """
 Author:         Coen Konings
 Date:           September 29, 2023
+
 Last edited by: Coen Konings
-On:             October 3, 2023
+On:             October 6, 2023
 
 main.py:
 Play a default example rhythm on the sequencer in main.py.

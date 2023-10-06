@@ -3,7 +3,7 @@ Author:     Coen Konings
 Date:       October 6, 2023
 
 helpers.py:
-Contains several helper functions.
+Contains helper functions for input verification.
 """
 
 
