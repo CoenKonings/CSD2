@@ -25,15 +25,14 @@ class NoteEvent:
     velocity, timestamp and duration.
     """
 
-    def __init__(self, timestamp, audio_file, duration, velocity):
+    def __init__(self, track, timestamp, duration, velocity):
         """
         Initialize a note object given the timestamp in 16th notes, the audio
         file to be played, the duration in 16th notes, and the velocity (a
         number from 0 to 127).
-        TODO Move audio file to sequencertrack?
         """
+        self.track = track
         self.timestamp = timestamp
-        self.audio_file = audio_file
         self.duration = duration  # Duration in 16th notes.
         self.velocity = velocity
 
@@ -42,7 +41,7 @@ class NoteEvent:
         Return a string representation of this note event.
         """
         return "<Note event object. Timestamp: {}. Audio file: {}. Duration: {}. Velocity: {}.>".format(
-            self.timestamp, self.audio_file, self.duration, self.velocity
+            self.timestamp, self.track.name, self.duration, self.velocity
         )
 
     def __lt__(self, other):
@@ -59,41 +58,12 @@ class NoteEvent:
         """
         return self.timestamp == other.timestamp
 
-    def sixteenth_duration(self, bpm):
-        """
-        Return the duration of a sixteenth note.
-        """
-        return 15 / bpm
-
-    def timestamp_in_seconds(self, bpm):
-        """
-        Given a list containing timestamps in sixteenth notes and the bpm, return
-        a list containing timestamps in seconds.
-        """
-        return self.sixteenth_duration(bpm) * self.timestamp
-
-    def duration_in_seconds(self, bpm):
-        """
-        Given a bpm, calculate the duration of a sixteenth note.
-        TODO Move to sequencer class probably.
-        """
-        return self.sixteenth_duration(bpm) * self.duration
-
-    def is_ready_to_play(self, time_since_start, bpm):
-        """
-        Return True if this NoteEvent is ready to be played. Return False
-        otherwise.
-        """
-        return self.timestamp_in_seconds(bpm) <= time_since_start
-
     def play(self):
         """
         Play this event's sound if current time exceeds this note event's
         timestamp.
-        TODO Move audio file to sequencertrack?
         """
-        self.audio_file.play()
-        print(self)
+        self.track.audio_file.play()
 
 
 class SequencerTrack:
@@ -103,15 +73,20 @@ class SequencerTrack:
     single audio file. Sequencer tracks are mono.
     """
 
-    def __init__(self, length, audio_file):
+    def __init__(self, sequencer, length, audio_file, name):
         """
         Initialize a sequencer track given its length and an audio file.
         """
+        self.sequencer = sequencer
         self.length = length
         self.note_events = []
         self.audio_file = audio_file
         self.note_index = 0
         self.sixteenth_index = 0
+        self.name = name
+
+    def __str__(self):
+        return self.name + " track"
 
     def add_note(self, timestamp, duration, velocity, replace=False):
         """
@@ -130,7 +105,7 @@ class SequencerTrack:
             else:
                 return
 
-        note_event = NoteEvent(timestamp, self.audio_file, duration, velocity)
+        note_event = NoteEvent(self, timestamp, duration, velocity)
         self.note_events.append(note_event)
         self.note_events.sort()
 
@@ -161,6 +136,21 @@ class Sequencer:
         self.sixteenth_duration = 15 / self.bpm
         self.queue = Queue()
 
+    def set_bpm(self, bpm):
+        """
+        Set the bpm and the new sixteenth note duration.
+        """
+        self.bpm = bpm
+        self.sixteenth_duration = 15 / bpm
+
+    def add_track(self, length, audio_file, name):
+        """
+        Add a new track to this sequencer.
+        """
+        track = SequencerTrack(self, length, audio_file, name)
+        self.tracks.append(track)
+        return track
+
     def bpm_input(self):
         """
         Display the default bpm to the user. If the user wishes to change it, get
@@ -174,8 +164,7 @@ class Sequencer:
             )
 
         if user_input != "":
-            self.bpm = int(user_input)
-            self.sixteenth_duration = 15 / self.bpm
+            self.set_bpm(int(user_input))
 
     def rhythm_input(self):
         """
@@ -228,7 +217,12 @@ class Sequencer:
             audio_file = self.audio_file_input()
             rhythm = self.rhythm_input()
             timestamps_16th = durations_to_timestamps_16th(rhythm)
-            track = SequencerTrack(16, audio_file)
+            name = ""
+
+            while name == "":
+                name = input("Enter this part's name\n>")
+
+            track = SequencerTrack(self, 16, audio_file, name)
             self.tracks.append(track)
 
             for i in range(len(rhythm)):
