@@ -1,4 +1,4 @@
 .venv/
-input.txt
 *.wav
 __pycache__
+*input.txt
