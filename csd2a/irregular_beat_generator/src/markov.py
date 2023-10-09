@@ -13,6 +13,13 @@ import time
 
 class Node:
     def __init__(self, name):
+        """
+        A node has a name. After the node has been created, edges can be added
+        to connect nodes with each other.
+
+        TODO restructure so that the name and the sounds associated with the
+        node are independent.
+        """
         self.name = name
         self.edges = []
 
@@ -31,6 +38,10 @@ class Node:
         self.edges.append(Edge(self, node, value))
 
     def follow_random_edge(self):
+        """
+        Follow a random edge based on their probabilities. Return the node that
+        edge leads to.
+        """
         value = random()
         total = 0
 
@@ -39,6 +50,10 @@ class Node:
 
             if value < total:
                 return edge.node_to
+
+        # If none of the edges are selected (this can happen if the edges'
+        # probabilities don't add up to 1), return self.
+        return self
 
 
 class Edge:
@@ -63,7 +78,7 @@ class MarkovChain:
 
     def add_node(self, name):
         """
-        Add a new node to the Markov chain.
+        Add a new node to the Markov chain. Names should be unique.
         """
         if self.node_exists(name):
             raise Exception("A node with name {} already exists.".format(name))
@@ -94,6 +109,10 @@ class MarkovChain:
         node_1.add_edge(node_2, value)
 
     def node_exists(self, name):
+        """
+        Return true if a node with the given name exists. Return false
+        otherwise.
+        """
         return any(node.name == name for node in self.nodes)
 
     def step(self):
@@ -106,6 +125,8 @@ class MarkovChain:
         else:
             self.state = self.state.follow_random_edge()
 
+        # The node's name determines the sounds to be played.
+        # TODO change this - add the appropriate sound files to the node.
         sounds = self.state.name.split("&")
 
         for sound in sounds:
@@ -131,9 +152,11 @@ def markov_chain_from_rhythm_file():
     total_length = 0
 
     for line in lines:
+        # Get part name and rhythm from line.
         name, part = line.split()
         rhythm[name] = [*part]
 
+        # Track the total length of the rhythm in 16th notes.
         if len(rhythm[name]) > total_length:
             total_length = len(rhythm[name])
 
@@ -142,6 +165,8 @@ def markov_chain_from_rhythm_file():
     for i in range(total_length):
         node_name = ""
 
+        # Nodes are named for their events (eg. low for a kick, high&low for a
+        # kick and a hihat simultaneously, empty string for a rest)
         for key in rhythm.keys():
             if rhythm[key][i] == "x":
                 node_name = key if node_name == "" else node_name + "&" + key
@@ -151,6 +176,7 @@ def markov_chain_from_rhythm_file():
     edges = {}
     onset = onsets.pop(0)
 
+    # Create a dictionary of the ways in which nodes follow each other.
     while len(onsets) != 0:
         if onset in edges.keys():
             edges[onset].append(onsets[0])
@@ -159,6 +185,7 @@ def markov_chain_from_rhythm_file():
 
         onset = onsets.pop(0)
 
+    # Create the Markov Chain given the previously generated dictionary.
     for node_name in edges.keys():
         markov_chain.add_node(node_name)
 
