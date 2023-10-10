@@ -172,6 +172,7 @@ def markov_chain_from_rhythm_file():
     with open("markov_rhythm_input.txt") as input_file:
         lines = [line for line in input_file]
 
+    lines.append(lines[-1]) # Process the rhythm as if it is looping
     rhythm = {}
     total_length = 0
 
