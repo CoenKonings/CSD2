@@ -65,6 +65,9 @@ class Edge:
         self.node_to = node_2
         self.value = value
 
+    def __str__(self):
+        return "Edge from {} to {} with value {}".format(self.node_from, self.node_to, self.value)
+
 
 class MarkovChain:
     """
