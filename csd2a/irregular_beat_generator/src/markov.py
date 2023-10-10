@@ -138,6 +138,30 @@ class MarkovChain:
                 sa.WaveObject.from_wave_file("../assets/hat.wav").play()
 
 
+def markov_chain_from_file():
+    """
+    Load a Markov chain from a file.
+    """
+    markov_chain = MarkovChain()
+
+    with open("markov_input.txt") as input_file:
+        lines = [line for line in input_file]
+
+    # First line contains the names of all nodes.
+    for node_name in lines.pop(0).split():
+        markov_chain.add_node(node_name)
+
+    # The other lines contain the edges.
+    for line in lines:
+        line_list = line.split()
+        from_node = line_list[0]
+        to_node = line_list[1]
+        value = line_list[2]
+        markov_chain.add_edge_by_node_name(from_node, to_node, float(value))
+
+    return markov_chain
+
+
 def markov_chain_from_rhythm_file():
     """
     Read a rhythm from a file and generate a markov chain.
@@ -145,7 +169,7 @@ def markov_chain_from_rhythm_file():
     """
     markov_chain = MarkovChain()
 
-    with open("markov_input.txt") as input_file:
+    with open("markov_rhythm_input.txt") as input_file:
         lines = [line for line in input_file]
 
     rhythm = {}
@@ -204,7 +228,7 @@ def main():
     if mode == "1":
         markov_chain = markov_chain_from_rhythm_file()
     elif mode == "2":
-        pass
+        markov_chain = markov_chain_from_file()
     else:
         print("Invalid mode.")
         exit()
