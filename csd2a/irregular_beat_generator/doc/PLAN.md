@@ -13,7 +13,7 @@ The steps towards a working prototype are listed here, and described in more det
 If the user enters the command `export`, the current content of each track should be written to a MIDI file called `rhythm.midi`. Optionally, the user can edit this name by entering a relative path: `export path/to/file.midi`.
 
 ### User input to generate a new rhythm for one or all voices
-If the user enters the command `regen <part>`, where `<part>` is `low`, `mid` or `high`, the generation algorithm should be called for the selected track in the sequencer. To enable typing while the rhythm is being played, the program should contain two threads: the main thread is tasked with reading user input, and the other thread is tasked with playing the rhythm.
+If the user enters the command `regen <part>`, where `<part>` is `low`, `mid`, `high` or `all`, the generation algorithm should be called for the selected track in the sequencer. To enable typing while the rhythm is being played, the program should contain two threads: the main thread is tasked with reading user input, and the other thread is tasked with playing the rhythm.
 
 ### Rhythm generation for 5/4
 A 5/4 meter indicates that the quarter notes get the beat, and each measure consists of five quarter notes. Usually, this is achieved by dividing the measure into four groups: 3-3-2-2 (eg. the Mission Impossible theme song), or by grouping the two short groups, resulting in a 3-3-4 feel (eg. parts of Lateralus by Tool). By accenting the first of the long, and the first of the short groups, a 5/4 feel can be forced.
