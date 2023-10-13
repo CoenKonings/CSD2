@@ -76,6 +76,9 @@ class MarkovChain:
     from one node to another at every timestep.
     """
     def __init__(self):
+        """
+        Markov chains are initialized stateless and with an empty set of nodes.
+        """
         self.nodes = []
         self.state = None
 
