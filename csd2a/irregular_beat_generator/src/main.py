@@ -16,15 +16,51 @@ from sequencer import Sequencer
 from markov import MarkovChain
 
 
-def main():
+class LiveCodingEnvironment:
     """
-    Play a rhythm defined by the user.
+    Handles user input.
     """
-    sequencer = Sequencer()
-    sequencer.bpm_input()
-    sequencer.notes_input()
-    sequencer.start()
+    def __init__(self):
+        """
+        Initialize the live coding environment.
+        """
+        self.sequencer = Sequencer()
+        self.markov_chain = MarkovChain()
+
+    def get_user_input(self):
+        """
+        Get input from the user.
+        """
+        return input("> ")
+
+    def handle_user_input(self, command):
+        """
+        Handle user input.
+        """
+        command = command.split()
+
+        if len(command) == 0:
+            print("Nothing.")
+            return False
+        elif command[0] == "quit":
+            print("Bye!")
+            return True
+        else:
+            print("Please enter a valid command.")
+
+        return False
+
+    def start(self):
+        """
+        Start the user input loop and rhythm thread.
+        TODO: threading
+        """
+        done = False
+
+        while not done:
+            user_input = self.get_user_input()
+            done = self.handle_user_input(user_input)
 
 
 if __name__ == "__main__":
-    main()
+    LiveCodingEnvironment().start()
