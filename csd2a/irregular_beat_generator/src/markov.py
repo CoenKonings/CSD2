@@ -143,99 +143,91 @@ class MarkovChain:
             elif sound == "high":
                 sa.WaveObject.from_wave_file("../assets/hat.wav").play()
 
+    def from_file(self, file_path):
+        """
+        Load a Markov chain from a file.
+        """
 
-def markov_chain_from_file():
-    """
-    Load a Markov chain from a file.
-    """
-    markov_chain = MarkovChain()
+        with open(file_path) as input_file:
+            lines = [line for line in input_file]
 
-    with open("markov_input.txt") as input_file:
-        lines = [line for line in input_file]
+        # First line contains the names of all nodes.
+        for node_name in lines.pop(0).split():
+            self.add_node(node_name)
 
-    # First line contains the names of all nodes.
-    for node_name in lines.pop(0).split():
-        markov_chain.add_node(node_name)
+        # The other lines contain the edges.
+        for line in lines:
+            line_list = line.split()
+            from_node = line_list[0]
+            to_node = line_list[1]
+            value = line_list[2]
+            self.add_edge_by_node_name(from_node, to_node, float(value))
 
-    # The other lines contain the edges.
-    for line in lines:
-        line_list = line.split()
-        from_node = line_list[0]
-        to_node = line_list[1]
-        value = line_list[2]
-        markov_chain.add_edge_by_node_name(from_node, to_node, float(value))
+    def from_rhythm_file(self, file_path):
+        """
+        Read a rhythm from a file and generate a markov chain.
+        TODO: clean up this mess
+        """
 
-    return markov_chain
+        with open(file_path) as input_file:
+            lines = [line for line in input_file]
 
+        lines.append(lines[-1]) # Process the rhythm as if it is looping
+        rhythm = {}
+        total_length = 0
 
-def markov_chain_from_rhythm_file():
-    """
-    Read a rhythm from a file and generate a markov chain.
-    TODO: clean up this mess
-    """
-    markov_chain = MarkovChain()
+        for line in lines:
+            # Get part name and rhythm from line.
+            name, part = line.split()
+            rhythm[name] = [*part]
 
-    with open("markov_rhythm_input.txt") as input_file:
-        lines = [line for line in input_file]
+            # Track the total length of the rhythm in 16th notes.
+            if len(rhythm[name]) > total_length:
+                total_length = len(rhythm[name])
 
-    lines.append(lines[-1]) # Process the rhythm as if it is looping
-    rhythm = {}
-    total_length = 0
+        onsets = []
 
-    for line in lines:
-        # Get part name and rhythm from line.
-        name, part = line.split()
-        rhythm[name] = [*part]
+        for i in range(total_length):
+            node_name = ""
 
-        # Track the total length of the rhythm in 16th notes.
-        if len(rhythm[name]) > total_length:
-            total_length = len(rhythm[name])
+            # Nodes are named for their events (eg. low for a kick, high&low for a
+            # kick and a hihat simultaneously, empty string for a rest)
+            for key in rhythm.keys():
+                if rhythm[key][i] == "x":
+                    node_name = key if node_name == "" else node_name + "&" + key
 
-    onsets = []
+            onsets.append(node_name)
 
-    for i in range(total_length):
-        node_name = ""
-
-        # Nodes are named for their events (eg. low for a kick, high&low for a
-        # kick and a hihat simultaneously, empty string for a rest)
-        for key in rhythm.keys():
-            if rhythm[key][i] == "x":
-                node_name = key if node_name == "" else node_name + "&" + key
-
-        onsets.append(node_name)
-
-    edges = {}
-    onset = onsets.pop(0)
-
-    # Create a dictionary of the ways in which nodes follow each other.
-    while len(onsets) != 0:
-        if onset in edges.keys():
-            edges[onset].append(onsets[0])
-        else:
-            edges[onset] = [onsets[0]]
-
+        edges = {}
         onset = onsets.pop(0)
 
-    # Create the Markov Chain given the previously generated dictionary.
-    for node_name in edges.keys():
-        markov_chain.add_node(node_name)
+        # Create a dictionary of the ways in which nodes follow each other.
+        while len(onsets) != 0:
+            if onset in edges.keys():
+                edges[onset].append(onsets[0])
+            else:
+                edges[onset] = [onsets[0]]
 
-    for from_node_name in edges.keys():
-        for to_node_name in edges.keys():
-            percent = edges[from_node_name].count(to_node_name) / len(edges[from_node_name])
-            markov_chain.add_edge_by_node_name(from_node_name, to_node_name, percent)
+            onset = onsets.pop(0)
 
-    return markov_chain
+        # Create the Markov Chain given the previously generated dictionary.
+        for node_name in edges.keys():
+            self.add_node(node_name)
+
+        for from_node_name in edges.keys():
+            for to_node_name in edges.keys():
+                percent = edges[from_node_name].count(to_node_name) / len(edges[from_node_name])
+                self.add_edge_by_node_name(from_node_name, to_node_name, percent)
 
 
 def main():
     mode = input("Select the mode. 1 for markov chain from rhythm, 2 for markov chain from file.\n>")
-    markov_chain = None
+    markov_chain = MarkovChain()
 
     if mode == "1":
-        markov_chain = markov_chain_from_rhythm_file()
+        markov_chain = markov_chain.from_rhythm_file("markov_rhythm2_input.txt")
     elif mode == "2":
-        markov_chain = markov_chain_from_file()
+        markov_chain = markov_chain.from_file("markov_input.txt")
     else:
         print("Invalid mode.")
         exit()
