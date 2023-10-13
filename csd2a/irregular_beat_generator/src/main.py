@@ -7,8 +7,13 @@ On:             October 6, 2023
 main.py:
 Given a tempo in BPM, a set of audio files and a set of note durations, play a
 rhythm.
+
+TODO implement UserInterface class
+TODO move interactions with sequencer to UserInterface class
+TODO implement commands
 """
 from sequencer import Sequencer
+from markov import MarkovChain
 
 
 def main():
