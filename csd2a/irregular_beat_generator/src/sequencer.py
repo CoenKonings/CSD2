@@ -58,6 +58,7 @@ class NoteEvent:
         Play this event's sound if current time exceeds this note event's
         timestamp.
         """
+        # NOTE velocity could be used here in a future version.
         self.track.audio_file.play()
 
 
@@ -165,6 +166,17 @@ class Sequencer:
         """
         self.bpm = bpm
         self.sixteenth_duration = 15 / bpm
+
+    def set_meter(self, numerator, denominator):
+        """
+        Set the sequencer's and all tracks' meter to numerator/denominator (eg.
+        a 7/8 meter has a numerator of 7 and a denominator of 8)
+        """
+        self.meter[0] = numerator
+        self.meter[1] = denominator
+
+        for track in self.tracks:
+            track.length = numerator * 16 / denominator # Track length in 16ths
 
     def __str__(self):
         """
