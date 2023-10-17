@@ -157,6 +157,8 @@ class Sequencer:
 
         for track_name in ["high", "mid", "low"]:
             audio_file_path = "../assets/{}.wav".format(track_name)
+
+            # Check if required audio file exists.
             if not isfile(audio_file_path):
                 raise Exception('Audio file "{}" not found.'.format(audio_file_path))
 
