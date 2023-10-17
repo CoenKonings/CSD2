@@ -8,8 +8,9 @@ main.py:
 Given a tempo in BPM, a set of audio files and a set of note durations, play a
 rhythm.
 
-TODO move interactions with sequencer to UserInterface class
-TODO implement commands
+TODO implement regen command
+TODO implement export command
+TODO implement modulate command
 """
 import threading
 from sequencer import Sequencer
