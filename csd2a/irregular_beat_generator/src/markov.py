@@ -60,13 +60,16 @@ class Edge:
     """
     Edges are one-directional connections between nodes.
     """
+
     def __init__(self, node_1, node_2, value):
         self.node_from = node_1
         self.node_to = node_2
         self.value = value
 
     def __str__(self):
-        return "Edge from {} to {} with value {}".format(self.node_from, self.node_to, self.value)
+        return "Edge from {} to {} with value {}".format(
+            self.node_from, self.node_to, self.value
+        )
 
 
 class MarkovChain:
@@ -75,6 +78,7 @@ class MarkovChain:
     edges, whose values represent the probability that the state transitions
     from one node to another at every timestep.
     """
+
     def __init__(self):
         """
         Markov chains are initialized stateless and with an empty set of nodes.
@@ -95,7 +99,12 @@ class MarkovChain:
         """
         Add an edge between two nodes identified by their indices.
         """
-        if node_1 < 0 or node_1 >= len(self.nodes) or node_2 < 0 or node_2 >= len(self.nodes):
+        if (
+            node_1 < 0
+            or node_1 >= len(self.nodes)
+            or node_2 < 0
+            or node_2 >= len(self.nodes)
+        ):
             raise Exception("Node index out of range")
 
         self.nodes[node_1].add_edge(self.nodes[node_2], value)
@@ -172,7 +181,7 @@ class MarkovChain:
         with open(file_path) as input_file:
             lines = [line for line in input_file]
 
-        lines.append(lines[-1]) # Process the rhythm as if it is looping
+        lines.append(lines[-1])  # Process the rhythm as if it is looping
         rhythm = {}
         total_length = 0
 
@@ -216,12 +225,16 @@ class MarkovChain:
 
         for from_node_name in edges.keys():
             for to_node_name in edges.keys():
-                percent = edges[from_node_name].count(to_node_name) / len(edges[from_node_name])
+                percent = edges[from_node_name].count(to_node_name) / len(
+                    edges[from_node_name]
+                )
                 self.add_edge_by_node_name(from_node_name, to_node_name, percent)
 
 
 def main():
-    mode = input("Select the mode. 1 for markov chain from rhythm, 2 for markov chain from file.\n>")
+    mode = input(
+        "Select the mode. 1 for markov chain from rhythm, 2 for markov chain from file.\n>"
+    )
     markov_chain = MarkovChain()
 
     if mode == "1":
