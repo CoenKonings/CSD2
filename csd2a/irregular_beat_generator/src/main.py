@@ -8,12 +8,13 @@ main.py:
 Given a tempo in BPM, a set of audio files and a set of note durations, play a
 rhythm.
 
-TODO implement UserInterface class
 TODO move interactions with sequencer to UserInterface class
 TODO implement commands
 """
+import threading
 from sequencer import Sequencer
 from markov import MarkovChain
+from queue import Queue
 
 
 class LiveCodingEnvironment:
@@ -24,42 +25,53 @@ class LiveCodingEnvironment:
         """
         Initialize the live coding environment.
         """
-        self.sequencer = Sequencer()
+        self.queue = Queue()
+        self.sequencer = Sequencer(self.queue)
         self.markov_chain = MarkovChain()
-
-    def get_user_input(self):
-        """
-        Get input from the user.
-        """
-        return input("> ")
 
     def handle_user_input(self, command):
         """
         Handle user input.
         """
-        command = command.split()
+        command = command.lower().split()
 
         if len(command) == 0:
-            print("Nothing.")
+            print("No command found.")
             return False
         elif command[0] == "quit":
-            print("Bye!")
+            self.queue.put("quit")
             return True
         else:
             print("Please enter a valid command.")
 
         return False
 
-    def start(self):
+    def get_user_input(self):
         """
-        Start the user input loop and rhythm thread.
-        TODO: threading
+        Get input until the user indicates they want to quit.
         """
         done = False
 
         while not done:
-            user_input = self.get_user_input()
+            user_input = input(">")
             done = self.handle_user_input(user_input)
+
+    def start(self):
+        """
+        Start the user input loop and rhythm playing thread.
+        """
+        play_thread = threading.Thread(target=self.sequencer.start)
+
+        # Ensure the play thread is stopped if the user interrupts the main
+        # thread.
+        try:
+            play_thread.start()
+            self.get_user_input()
+        except KeyboardInterrupt:
+            self.queue.put("quit")
+
+        play_thread.join()
+        print("Bye!")
 
 
 if __name__ == "__main__":

@@ -2,13 +2,13 @@
 Author:         Coen Konings
 Date:           October 3, 2023
 Last edited by: Coen Konings
-On:             October 6, 2023
+On:             October 17, 2023
 
 sequencer.py:
 Implement all classes necessary to run a sequencer.
+TODO move all user input features to the live coding environment in main.py.
 """
 import simpleaudio as sa
-import threading
 import time
 from helpers import (
     str_is_int_gt_zero,
@@ -16,7 +16,6 @@ from helpers import (
     durations_to_timestamps_16th,
 )
 from os.path import isfile
-from queue import Queue
 
 
 class NoteEvent:
@@ -34,7 +33,7 @@ class NoteEvent:
         self.track = track
         self.timestamp = timestamp
         self.duration = duration  # Duration in 16th notes.
-        self.velocity = velocity
+        self.velocity = velocity  # NOTE: unused, but might be useful in future iterations.
 
     def __str__(self):
         """
@@ -86,6 +85,9 @@ class SequencerTrack:
         self.name = name
 
     def __str__(self):
+        """
+        Represent the track as a string.
+        """
         return self.name + " track"
 
     def add_note(self, timestamp, duration, velocity, replace=False):
@@ -130,15 +132,16 @@ class Sequencer:
     time, control the tracks / rhythms and handle user input.
     """
 
-    def __init__(self):
+    def __init__(self, queue):
         """
         Initialize the sequencer by creating an empty list of sequencer
-        tracks.
+        tracks, setting the default bpm and saving the queue that will be used
+        for communication between the live coding environment and the
+        sequencer.
         """
         self.tracks = []
-        self.bpm = 120
-        self.sixteenth_duration = 15 / self.bpm
-        self.queue = Queue()
+        self.set_bpm(120)
+        self.queue = queue
 
     def set_bpm(self, bpm):
         """
@@ -254,9 +257,10 @@ class Sequencer:
             elif str_is_int_gt_zero(command):
                 self.queue.put(int(command))
 
-    def play(self):
+    def start(self):
         """
-        Play a rhythm using the given timestamps.
+        Starts the sequencer's main loop. This loop handles both incoming
+        commands and correctly timing each track's events.
         """
         start_time = time.time()
         done = False
@@ -270,7 +274,7 @@ class Sequencer:
             except:
                 command = None
 
-            if command == "stop":
+            if command == "quit":
                 done = True
             elif isinstance(command, int):
                 self.bpm = command
@@ -283,18 +287,3 @@ class Sequencer:
                 n_sixteenths += 1
             else:
                 time.sleep(0.001)
-
-    def start(self):
-        """
-        Start playing the sequences.
-        """
-        play_thread = threading.Thread(target=self.play)
-
-        try:
-            play_thread.start()
-            self.input_while_playing()
-        except KeyboardInterrupt:
-            self.queue.put("stop")
-
-        play_thread.join()
-        print("Bye!")
