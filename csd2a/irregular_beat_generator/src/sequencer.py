@@ -142,19 +142,26 @@ class Sequencer:
         the sequencer.
         """
         self.tracks = []
-
-        # Initialize tracks for high, mid and low.
-        for track_name in ["high", "mid", "low"]:
-            audio_file_path = "../assets/{}.wav".format(track_name)
-            audio_file = sa.WaveObject.from_wave_file(audio_file_path)
-            self.tracks.append(SequencerTrack(self, 16, audio_file, track_name))
-
+        self.initialize_tracks()
         self.set_bpm(120)
         self.meter = (4, 4)
         self.queue = queue
         self.start_time = None
         self.done_playing = False
         self.play_index = 0
+
+    def initialize_tracks(self):
+        """
+        Initialize tracks for high, mid and low.
+        """
+
+        for track_name in ["high", "mid", "low"]:
+            audio_file_path = "../assets/{}.wav".format(track_name)
+            if not isfile(audio_file_path):
+                raise Exception('Audio file "{}" not found.'.format(audio_file_path))
+
+            audio_file = sa.WaveObject.from_wave_file(audio_file_path)
+            self.tracks.append(SequencerTrack(self, 16, audio_file, track_name))
 
     def set_bpm(self, bpm):
         """
