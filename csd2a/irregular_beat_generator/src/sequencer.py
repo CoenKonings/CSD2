@@ -79,6 +79,9 @@ class SequencerTrack:
         Initialize a sequencer track given its length and an audio file.
         """
         self.sequencer = sequencer
+        # NOTE in this implementation, length is redundant. It is, however,
+        # left in here so it is easy to implement the possibility of having
+        # tracks of differing lengths in the same sequencer.
         self.length = length
         self.note_events = []
         self.audio_file = audio_file
@@ -137,14 +140,17 @@ class Sequencer:
     def __init__(self, queue):
         """
         Initialize the sequencer by creating an empty list of sequencer
-        tracks, setting the default bpm and saving the queue that will be used
-        for communication between the live coding environment and the
-        sequencer.
+        tracks, setting default values for attributes and saving the queue that
+        will be used for communication between the live coding environment and
+        the sequencer.
         """
         self.tracks = []
         self.set_bpm(120)
         self.meter = (4, 4)
         self.queue = queue
+        self.start_time = None
+        self.done_playing = False
+        self.play_index = 0
 
     def set_bpm(self, bpm):
         """
@@ -169,33 +175,49 @@ class Sequencer:
         self.tracks.append(track)
         return track
 
+    def handle_command(self, command):
+        """
+        Handle commands from the queue.
+        """
+        if not command:
+            return
+
+        command = command.split()
+
+        if len(command) == 1 and command[0] == "quit":
+            self.done_playing = True
+        elif len(command) == 2 and command[0] == "bpm":
+            self.set_bpm(command[1])
+            self.start_time = time.time() + 0.001
+            self.play_index = 1
+
+    def get_command(self):
+        """
+        Get a command from the queue.
+        """
+        try:
+            return self.queue.get(block=False)
+        except:
+            return None
+
     def start(self):
         """
         Starts the sequencer's main loop. This loop handles both incoming
         commands and correctly timing each track's events.
         """
-        start_time = time.time()
-        done = False
-        n_sixteenths = 0
+        self.start_time = time.time()
+        self.done_playing = False
+        self.play_index = 0
 
-        while not done:
-            time_since_start = time.time() - start_time
+        while not self.done_playing:
+            time_since_start = time.time() - self.start_time
+            command = self.get_command()
+            self.handle_command(command)
 
-            try:
-                command = self.queue.get(block=False)
-            except:
-                command = None
+            if time_since_start - self.play_index * self.sixteenth_duration > 0:
+                for track in self.tracks:
+                    track.step()
 
-            if command == "quit":
-                done = True
-            elif isinstance(command, int):
-                self.bpm = command
-                start_time = time.time() + 0.001
-                n_sixteenths = 1
-                continue
-
-            if time_since_start - n_sixteenths * self.sixteenth_duration > 0:
-                [track.step() for track in self.tracks]
-                n_sixteenths += 1
+                self.play_index += 1
             else:
                 time.sleep(0.001)
