@@ -7,8 +7,6 @@ Contains the necessary classes to generate a polyphonic rhythm using a Markov
 chain.
 """
 from random import random
-import simpleaudio as sa
-import time
 
 
 class Node:
@@ -49,7 +47,7 @@ class Node:
             total += edge.value
 
             if value < total:
-                return edge.node_to
+                return edge.follow()
 
         # If none of the edges are selected (this can happen if the edges'
         # probabilities don't add up to 1), return self.
@@ -70,6 +68,9 @@ class Edge:
         return "Edge from {} to {} with value {}".format(
             self.node_from, self.node_to, self.value
         )
+
+    def follow(self):
+        return self.node_to
 
 
 class MarkovChain:
@@ -140,38 +141,6 @@ class MarkovChain:
         else:
             self.state = self.state.follow_random_edge()
 
-        # The node's name determines the sounds to be played.
-        # TODO change this - add the appropriate sound files to the node.
-        sounds = self.state.name.split("&")
-
-        for sound in sounds:
-            if sound == "low":
-                sa.WaveObject.from_wave_file("../assets/kick.wav").play()
-            elif sound == "mid":
-                sa.WaveObject.from_wave_file("../assets/snare.wav").play()
-            elif sound == "high":
-                sa.WaveObject.from_wave_file("../assets/hat.wav").play()
-
-    def from_file(self, file_path):
-        """
-        Load a Markov chain from a file.
-        """
-
-        with open(file_path) as input_file:
-            lines = [line for line in input_file]
-
-        # First line contains the names of all nodes.
-        for node_name in lines.pop(0).split():
-            self.add_node(node_name)
-
-        # The other lines contain the edges.
-        for line in lines:
-            line_list = line.split()
-            from_node = line_list[0]
-            to_node = line_list[1]
-            value = line_list[2]
-            self.add_edge_by_node_name(from_node, to_node, float(value))
-
     def from_rhythm_file(self, file_path):
         """
         Read a rhythm from a file and generate a markov chain.
@@ -231,32 +200,5 @@ class MarkovChain:
                 self.add_edge_by_node_name(from_node_name, to_node_name, percent)
 
 
-def main():
-    mode = input(
-        "Select the mode. 1 for markov chain from rhythm, 2 for markov chain from file.\n>"
-    )
-    markov_chain = MarkovChain()
-
-    if mode == "1":
-        markov_chain = markov_chain.from_rhythm_file("markov_rhythm2_input.txt")
-    elif mode == "2":
-        markov_chain = markov_chain.from_file("markov_input.txt")
-    else:
-        print("Invalid mode.")
-        exit()
-
-    start_time = time.time()
-    bpm = 120
-    sixteenth_duration = 15 / bpm
-    i = 0
-
-    while True:
-        if time.time() - start_time >= i * sixteenth_duration:
-            markov_chain.step()
-            i += 1
-
-        time.sleep(0.001)
-
-
 if __name__ == "__main__":
-    main()
+    print("Please run from main.py.")
