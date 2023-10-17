@@ -79,10 +79,7 @@ class SequencerTrack:
         Initialize a sequencer track given its length and an audio file.
         """
         self.sequencer = sequencer
-        # NOTE in this implementation, length is redundant. It is, however,
-        # left in here so it is easy to implement the possibility of having
-        # tracks of differing lengths in the same sequencer.
-        self.length = length
+        self.length = length  # Length in sixteenth notes.
         self.note_events = []
         self.audio_file = audio_file
         self.note_index = 0
@@ -133,8 +130,8 @@ class SequencerTrack:
 
 class Sequencer:
     """
-    The sequencer is the brain and face of the system. It will keep track of
-    time, control the tracks / rhythms and handle user input.
+    The sequencer is the brain of the system. It will keep track of time,
+    control the tracks / rhythms and handle user input.
     """
 
     def __init__(self, queue):
@@ -145,6 +142,13 @@ class Sequencer:
         the sequencer.
         """
         self.tracks = []
+
+        # Initialize tracks for high, mid and low.
+        for track_name in ["high", "mid", "low"]:
+            audio_file_path = "../assets/{}.wav".format(track_name)
+            audio_file = sa.WaveObject.from_wave_file(audio_file_path)
+            self.tracks.append(SequencerTrack(self, 16, audio_file, track_name))
+
         self.set_bpm(120)
         self.meter = (4, 4)
         self.queue = queue
