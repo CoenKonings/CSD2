@@ -1,6 +1,16 @@
 # Irregular beat generator
 Generate a beat given a user defined meter. Continue playing the rhythm while allowing the user to enter commands to change the rhythm or export it to MIDI.
 
+## Requirements
+See `requirements.txt` in the root folder of this repository for the required Python libraries.
+
+The irregular beat generator expects three audio files to be present:
+1. `../assets/kick.wav`,
+2. `../assets/snare.wav`,
+3. `../assets/hat.wav`.
+
+Here, `kick.wav` contains the sound for the low layer of the rhythm, `snare.wav` contains the sound for the middle layer of the rhythm, and `hat.wav` contains the sound for the high layer of the rhythm.
+
 ## Usage
 Run `python main.py` from `../src` for the CLI.
 
