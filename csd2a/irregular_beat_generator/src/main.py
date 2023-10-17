@@ -21,6 +21,7 @@ class LiveCodingEnvironment:
     """
     Handles user input.
     """
+
     def __init__(self):
         """
         Initialize the live coding environment.
@@ -53,6 +54,7 @@ class LiveCodingEnvironment:
         done = False
 
         while not done:
+            print(self.sequencer)
             user_input = input(">")
             done = self.handle_user_input(user_input)
 

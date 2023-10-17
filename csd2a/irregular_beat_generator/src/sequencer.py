@@ -33,7 +33,9 @@ class NoteEvent:
         self.track = track
         self.timestamp = timestamp
         self.duration = duration  # Duration in 16th notes.
-        self.velocity = velocity  # NOTE: unused, but might be useful in future iterations.
+        self.velocity = (
+            velocity  # NOTE: unused, but might be useful in future iterations.
+        )
 
     def __str__(self):
         """
@@ -141,6 +143,7 @@ class Sequencer:
         """
         self.tracks = []
         self.set_bpm(120)
+        self.meter = (4, 4)
         self.queue = queue
 
     def set_bpm(self, bpm):
@@ -149,6 +152,14 @@ class Sequencer:
         """
         self.bpm = bpm
         self.sixteenth_duration = 15 / bpm
+
+    def __str__(self):
+        """
+        Return this sequencer's status as a string.
+        """
+        return "Tracks: {}. Meter: {}/{}. Tempo: {}bpm.".format(
+            len(self.tracks), self.meter[0], self.meter[1], self.bpm
+        )
 
     def add_track(self, length, audio_file, name):
         """
