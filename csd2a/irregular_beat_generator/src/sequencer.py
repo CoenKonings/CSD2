@@ -6,15 +6,9 @@ On:             October 17, 2023
 
 sequencer.py:
 Implement all classes necessary to run a sequencer.
-TODO move all user input features to the live coding environment in main.py.
 """
 import simpleaudio as sa
 import time
-from helpers import (
-    str_is_int_gt_zero,
-    note_duration_valid,
-    durations_to_timestamps_16th,
-)
 from os.path import isfile
 
 
