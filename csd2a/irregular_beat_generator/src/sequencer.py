@@ -115,6 +115,9 @@ class SequencerTrack:
         """
         self.sixteenth_index = (self.sixteenth_index + 1) % self.length
 
+        if len(self.note_events) == 0:
+            return
+
         if self.note_events[self.note_index].timestamp == self.sixteenth_index:
             self.note_events[self.note_index].play()
             self.note_index = (self.note_index + 1) % len(self.note_events)
@@ -129,7 +132,7 @@ class Sequencer:
     control the tracks / rhythms and handle user input.
     """
 
-    def __init__(self, queue):
+    def __init__(self, queue_incoming, queue_outgoing):
         """
         Initialize the sequencer by creating an empty list of sequencer
         tracks, setting default values for attributes and saving the queue that
@@ -139,8 +142,9 @@ class Sequencer:
         self.tracks = []
         self.initialize_tracks()
         self.set_bpm(120)
-        self.meter = (4, 4)
-        self.queue = queue
+        self.meter = (7, 8)
+        self.queue_incoming = queue_incoming
+        self.queue_outgoing = queue_outgoing
         self.start_time = None
         self.done_playing = False
         self.play_index = 0
@@ -201,21 +205,22 @@ class Sequencer:
         if not command:
             return
 
-        command = command.split()
-
         if len(command) == 1 and command[0] == "quit":
             self.done_playing = True
-        elif len(command) == 2 and command[0] == "bpm":
+        elif command[0] == "bpm":
             self.set_bpm(command[1])
+            # TODO make sure the tracks continue playing from where they were
             self.start_time = time.time() + 0.001
             self.play_index = 1
+
+        self.queue_outgoing.put("done")
 
     def get_command(self):
         """
         Get a command from the queue.
         """
         try:
-            return self.queue.get(block=False)
+            return self.queue_incoming.get(block=False)
         except:
             return None
 
@@ -225,7 +230,6 @@ class Sequencer:
         commands and correctly timing each track's events.
         """
         self.start_time = time.time()
-        self.done_playing = False
         self.play_index = 0
 
         while not self.done_playing:
