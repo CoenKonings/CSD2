@@ -10,6 +10,8 @@ Implement all classes necessary to run a sequencer.
 import simpleaudio as sa
 import time
 from os.path import isfile
+from markov import MarkovChain
+from helpers import rhythm_file_path
 
 
 class NoteEvent:
@@ -140,14 +142,22 @@ class Sequencer:
         the sequencer.
         """
         self.tracks = []
+        self.meter = (7, 8)
+        self.markov_chain = MarkovChain()
+        self.markov_chain.from_rhythm_file(rhythm_file_path(self.meter))
         self.initialize_tracks()
         self.set_bpm(120)
-        self.meter = (7, 8)
         self.queue_incoming = queue_incoming
         self.queue_outgoing = queue_outgoing
         self.start_time = None
         self.done_playing = False
         self.play_index = 0
+
+    def sequence_length(self):
+        """
+        Calculate the length of the sequence in 16th notes.
+        """
+        return self.meter[0] * 16 / self.meter[1]
 
     def initialize_tracks(self):
         """
@@ -162,7 +172,7 @@ class Sequencer:
                 raise Exception('Audio file "{}" not found.'.format(audio_file_path))
 
             audio_file = sa.WaveObject.from_wave_file(audio_file_path)
-            self.tracks.append(SequencerTrack(self, 16, audio_file, track_name))
+            self.tracks.append(SequencerTrack(self, self.sequence_length(), audio_file, track_name))
 
     def set_bpm(self, bpm):
         """
@@ -180,7 +190,7 @@ class Sequencer:
         self.meter[1] = denominator
 
         for track in self.tracks:
-            track.length = numerator * 16 / denominator # Track length in 16ths
+            track.length = self.sequence_length() # Track length in 16ths
 
     def __str__(self):
         """

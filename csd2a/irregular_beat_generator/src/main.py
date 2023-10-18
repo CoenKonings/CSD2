@@ -34,7 +34,6 @@ class LiveCodingEnvironment:
         self.queue_outgoing = Queue()
         self.queue_incoming = Queue()
         self.sequencer = Sequencer(self.queue_outgoing, self.queue_incoming)
-        self.markov_chain = MarkovChain()
 
     def wait_for_sequencer(self):
         """

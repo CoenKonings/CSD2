@@ -110,26 +110,43 @@ class MarkovChain:
 
         self.nodes[node_1].add_edge(self.nodes[node_2], value)
 
+    def get_node_by_name(self, node_name):
+        """
+        Get a node by its name.
+        """
+        return next((node for node in self.nodes if node.name == node_name), None)
+
     def add_edge_by_node_name(self, node_1_name, node_2_name, value):
         """
         Add an edge between two nodes identified by their names.
         """
+        self.check_if_nodes_exist([node_1_name, node_2_name])
         node_1 = next((node for node in self.nodes if node.name == node_1_name), None)
         node_2 = next((node for node in self.nodes if node.name == node_2_name), None)
 
-        if not node_1:
-            raise Exception("Node with name {} does not exist.".format(node_1_name))
-        if not node_2:
-            raise Exception("Node with name {} does not exist.".format(node_2_name))
-
         node_1.add_edge(node_2, value)
 
-    def node_exists(self, name):
+    def check_if_nodes_exist(self, node_names):
+        """
+        Check if a node exists. Raise an exception if it doesn't.
+        """
+        for node_name in node_names:
+            if not self.node_exists(node_name):
+                raise Exception("Node with name {} does not exist.".format(node_name))
+
+    def node_exists(self, node_name):
         """
         Return true if a node with the given name exists. Return false
         otherwise.
         """
-        return any(node.name == name for node in self.nodes)
+        return any(node.name == node_name for node in self.nodes)
+
+    def set_state(self, node_name):
+        """
+        Set the current state to the node with the given name.
+        """
+        self.check_if_nodes_exist([node_name])
+        self.state = self.get_node_by_name(node_name)
 
     def step(self):
         """
@@ -146,6 +163,9 @@ class MarkovChain:
         Read a rhythm from a file and generate a markov chain.
         TODO: clean up this mess
         """
+
+        self.nodes = []
+        self.state = None
 
         with open(file_path) as input_file:
             lines = [line for line in input_file]
