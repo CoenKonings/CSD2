@@ -121,8 +121,8 @@ class MarkovChain:
         Add an edge between two nodes identified by their names.
         """
         self.check_if_nodes_exist([node_1_name, node_2_name])
-        node_1 = next((node for node in self.nodes if node.name == node_1_name), None)
-        node_2 = next((node for node in self.nodes if node.name == node_2_name), None)
+        node_1 = self.get_node_by_name(node_1_name)
+        node_2 = self.get_node_by_name(node_2_name)
 
         node_1.add_edge(node_2, value)
 

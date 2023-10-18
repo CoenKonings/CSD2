@@ -78,6 +78,7 @@ class SequencerTrack:
         self.sequencer = sequencer
         self.length = length  # Length in sixteenth notes.
         self.note_events = []
+        self.next_rhythm = None
         self.audio_file = audio_file
         self.note_index = 0
         self.sixteenth_index = 0
@@ -111,21 +112,40 @@ class SequencerTrack:
         self.note_events.append(note_event)
         self.note_events.sort()
 
+    def swap_rhythms(self):
+        """
+        If a next rhythm exists, edit the list of note events to reflect the
+        new rhythm.
+        """
+        self.note_events = []
+
+        for timestamp in self.next_rhythm:
+            self.add_note(timestamp, 1, 100)
+
+        self.next_rhythm = None
+
     def step(self):
         """
         Step the sequencer track one sixteenth.
         """
         self.sixteenth_index = (self.sixteenth_index + 1) % self.length
 
-        if len(self.note_events) == 0:
-            return
-
-        if self.note_events[self.note_index].timestamp == self.sixteenth_index:
+        if len(self.note_events) > 0 and self.note_events[self.note_index].timestamp == self.sixteenth_index:
             self.note_events[self.note_index].play()
             self.note_index = (self.note_index + 1) % len(self.note_events)
 
-        if self.note_events[self.note_index].timestamp >= self.length:
+
+        if len(self.note_events) > 0 and self.note_events[self.note_index].timestamp >= self.length:
             self.note_index = 0
+
+        if self.note_index == 0 and self.next_rhythm:
+            self.swap_rhythms()
+
+    def set_next_rhythm(self, timestamps):
+        """
+        Set the rhythmical pattern to switch to at the end of the loop.
+        """
+        self.next_rhythm = timestamps
 
 
 class Sequencer:
@@ -153,11 +173,11 @@ class Sequencer:
         self.done_playing = False
         self.play_index = 0
 
-    def sequence_length(self):
+    def get_sequence_length(self):
         """
         Calculate the length of the sequence in 16th notes.
         """
-        return self.meter[0] * 16 / self.meter[1]
+        return int(self.meter[0] * 16 / self.meter[1])
 
     def initialize_tracks(self):
         """
@@ -172,7 +192,7 @@ class Sequencer:
                 raise Exception('Audio file "{}" not found.'.format(audio_file_path))
 
             audio_file = sa.WaveObject.from_wave_file(audio_file_path)
-            self.tracks.append(SequencerTrack(self, self.sequence_length(), audio_file, track_name))
+            self.tracks.append(SequencerTrack(self, self.get_sequence_length(), audio_file, track_name))
 
     def set_bpm(self, bpm):
         """
@@ -188,9 +208,10 @@ class Sequencer:
         """
         self.meter[0] = numerator
         self.meter[1] = denominator
+        self.markov_chain.from_rhythm_file(rhythm_file_path(self.meter))
 
         for track in self.tracks:
-            track.length = self.sequence_length() # Track length in 16ths
+            track.length = self.get_sequence_length() # Track length in 16ths
 
     def __str__(self):
         """
@@ -208,11 +229,39 @@ class Sequencer:
         self.tracks.append(track)
         return track
 
-    def regen(self, track_name):
+    def get_track(self, track_name):
+        """
+        Get a track by name.
+        """
+        return next((track for track in self.tracks if track.name == track_name), None)
+
+    def regenerate_rhythm(self, track_name):
         """
         Generate a new rhythm for the given track.
+        TODO cleanup crew
         """
-        pass
+
+        # Regenerate all tracks. TODO: find a better way?
+        if track_name == "all":
+            for track in ["low", "mid", "high"]:
+                self.regenerate_rhythm(track)
+                return
+
+        self.markov_chain.state = None
+        track = self.get_track(track_name)
+        new_rhythm = []
+
+        for i in range(self.get_sequence_length()):
+            self.markov_chain.step()
+
+            if i == 6 and self.meter == (5, 4) or i == 4 and self.meter == (7, 8):
+                self.markov_chain.set_state("mid")
+
+            if self.markov_chain.state.name == track_name:
+                new_rhythm.append(i)
+
+        track.set_next_rhythm(new_rhythm)
+
 
     def handle_command(self, command):
         """
@@ -229,7 +278,7 @@ class Sequencer:
             self.start_time = time.time() + 0.001
             self.play_index = 1
         elif command[0] == "regen":
-            self.regen(command[1])
+            self.regenerate_rhythm(command[1])
 
         self.queue_outgoing.put("done")
 
