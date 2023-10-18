@@ -47,6 +47,13 @@ class LiveCodingEnvironment:
         Set the sequencer's tempo.
         """
         self.queue_outgoing.put(("bpm", bpm))
+        self.wait_for_sequencer()
+
+    def handle_regen_command(self, track):
+        """
+        Have the sequencer regenerate one or all of its tracks.
+        """
+        self.queue_outgoing.put(("regen", track))
 
     def handle_user_input(self, command):
         """
@@ -62,7 +69,8 @@ class LiveCodingEnvironment:
             return True
         elif command[0] == "bpm" and len(command) == 2 and str_is_int_gt_zero(command[1]):
             self.handle_bpm_command(int(command[1]))
-            self.wait_for_sequencer()
+        elif command[0] == "regen" and len(command) == 2 and command[1] in ["low", "mid", "high", "all"]:
+            self.handle_regen_command(command[1])
         else:
             print("Please enter a valid command.")
 

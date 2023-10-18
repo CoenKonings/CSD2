@@ -198,6 +198,12 @@ class Sequencer:
         self.tracks.append(track)
         return track
 
+    def regen(self, track_name):
+        """
+        Generate a new rhythm for the given track.
+        """
+        pass
+
     def handle_command(self, command):
         """
         Handle commands from the queue.
@@ -212,6 +218,8 @@ class Sequencer:
             # TODO make sure the tracks continue playing from where they were
             self.start_time = time.time() + 0.001
             self.play_index = 1
+        elif command[0] == "regen":
+            self.regen(command[1])
 
         self.queue_outgoing.put("done")
 
