@@ -43,3 +43,7 @@ def note_duration_valid(duration):
         return False
 
     return True
+
+
+if __name__ == "__main__":
+    print("Please run from main.py")
