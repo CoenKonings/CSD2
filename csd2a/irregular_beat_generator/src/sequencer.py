@@ -12,6 +12,7 @@ import time
 from os.path import isfile
 from markov import MarkovChain
 from helpers import rhythm_file_path
+from midiutil.MidiFile import MIDIFile
 
 
 class NoteEvent:
@@ -254,7 +255,7 @@ class Sequencer:
         for i in range(self.get_sequence_length()):
             self.markov_chain.step()
 
-            if i == 6 and self.meter == (5, 4) or i == 4 and self.meter == (7, 8):
+            if i == 6 and self.meter == (5, 4) or i == 8 and self.meter == (7, 8):
                 self.markov_chain.set_state("mid")
 
             if self.markov_chain.state.name == track_name:
@@ -262,6 +263,29 @@ class Sequencer:
 
         track.set_next_rhythm(new_rhythm)
 
+    def export_midi(self, file_name):
+        """
+        Export the current rhythm to a midi track. Source:
+        https://midiutil.readthedocs.io/en/1.2.1/index.html
+        """
+        print("This functionality is not working yet...")
+        # midi_file = MIDIFile(1, removeDuplicates=False)
+        # midi_track = 0
+        # time = 0
+        # midi_file.addTrackName(midi_track, time, "Rhythm Track")
+        # midi_file.addTempo(midi_track, time, self.bpm)
+        # pitch = 48
+
+        # for track_name in ["low", "mid", "high"]:
+        #     track = self.get_track(track_name)
+
+        #     for note_event in track.note_events:
+        #         midi_file.addNote(midi_track, 0, pitch, note_event.timestamp / 4, note_event.timestamp / 4, note_event.velocity)
+
+        #     pitch += 1 # Separate pitch for each track in the sequencer.
+
+        # with open(file_name, "wb") as output_file:
+        #     midi_file.writeFile(output_file)
 
     def handle_command(self, command):
         """
@@ -279,6 +303,8 @@ class Sequencer:
             self.play_index = 1
         elif command[0] == "regen":
             self.regenerate_rhythm(command[1])
+        elif command[0] == "export":
+            self.export_midi(command[1])
 
         self.queue_outgoing.put("done")
 

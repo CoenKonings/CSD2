@@ -41,35 +41,38 @@ class LiveCodingEnvironment:
         """
         self.queue_incoming.get()
 
-    def handle_bpm_command(self, bpm):
+    def handle_command_with_wait(self, command):
         """
-        Set the sequencer's tempo.
+        Send a command to the sequencer and wait until it is done.
         """
-        self.queue_outgoing.put(("bpm", bpm))
+        self.queue_outgoing.put(command)
         self.wait_for_sequencer()
 
-    def handle_regen_command(self, track):
+    def handle_command(self, command):
         """
         Have the sequencer regenerate one or all of its tracks.
         """
-        self.queue_outgoing.put(("regen", track))
+        self.queue_outgoing.put(command)
 
     def handle_user_input(self, command):
         """
         Handle user input.
         TODO split validation and handling.
+        TODO send command as array?
         """
         command = command.lower().split()
 
         if len(command) == 0:
             print("Please enter a command.")
         elif command[0] == "quit":
-            self.queue_outgoing.put(("quit",))
+            self.handle_command(command)
             return True
         elif command[0] == "bpm" and len(command) == 2 and str_is_int_gt_zero(command[1]):
-            self.handle_bpm_command(int(command[1]))
+            self.handle_command_with_wait(("bpm", int(command[1])))
         elif command[0] == "regen" and len(command) == 2 and command[1] in ["low", "mid", "high", "all"]:
-            self.handle_regen_command(command[1])
+            self.handle_command((command[0], command[1]))
+        elif command[0] == "export" and len(command) == 2:
+            self.handle_command((command[0], command[1]))
         else:
             print("Please enter a valid command.")
 
