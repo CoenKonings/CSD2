@@ -268,19 +268,41 @@ class Sequencer:
 
         return new_rhythm
 
+    def regenerate_all_rhythms(self):
+        """
+        Regenereate all rhythms with a single markov chain.
+        TODO: cleanup
+        """
+        new_rhythms = {
+            "high": [],
+            "mid": [],
+            "low": []
+        }
+
+        self.markov_chain.state = None
+
+        for i in range(self.get_sequence_length()):
+            self.markov_chain.step()
+
+            if i == 6 and self.meter == (5, 4) or i == 8 and self.meter == (7, 8):
+                self.markov_chain.set_state("mid")
+
+            if self.markov_chain.state.name in new_rhythms.keys():
+                new_rhythms[self.markov_chain.state.name].append(i)
+
+        for track_name in new_rhythms.keys():
+            self.get_track(track_name).set_next_rhythm(new_rhythms[track_name])
+
     def regenerate_rhythm(self, track_name):
         """
         Generate a new rhythm for the given track.
-        TODO cleanup crew
         """
+        self.markov_chain.state = None
 
-        # Regenerate all tracks. TODO: find a better way?
         if track_name == "all":
-            for track in ["low", "mid", "high"]:
-                self.regenerate_rhythm(track)
+            self.regenerate_all_rhythms()
             return
 
-        self.markov_chain.state = None
         track = self.get_track(track_name)
         new_rhythm = self.generate_rhythm(track_name, self.get_sequence_length())
         track.set_next_rhythm(new_rhythm)
