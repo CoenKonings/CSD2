@@ -265,7 +265,9 @@ class Sequencer:
         for i in range(length):
             self.markov_chain.step()
 
-            if i == 6 and self.meter == (5, 4) or i == 8 and self.meter == (7, 8):
+            # Force a snare on the 4th 8th note in 5/4 or on the 5th 8th note
+            # in 7/8
+            if i == 8 and self.meter == (5, 4) or i == 10 and self.meter == (7, 8):
                 self.markov_chain.set_state("mid")
 
             if self.markov_chain.state.name in new_rhythms.keys():
