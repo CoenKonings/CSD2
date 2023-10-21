@@ -2,17 +2,11 @@
 Author:         Coen Konings
 Date:           September 29, 2023
 Last edited by: Coen Konings
-On:             October 13, 2023
+On:             October 21, 2023
 
 main.py:
 Given a tempo in BPM, a set of audio files and a set of note durations, play a
 rhythm.
-
-TODO implement bpm command
-TODO implement help command
-TODO implement regen command
-TODO implement export command
-TODO implement modulate command
 """
 import threading
 import time
