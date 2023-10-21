@@ -79,6 +79,7 @@ class SequencerTrack:
         self.length = length  # Length in sixteenth notes.
         self.note_events = []
         self.next_rhythm = None
+        self.next_length = None
         self.audio_file = audio_file
         self.note_index = 0
         self.sixteenth_index = 0
@@ -140,6 +141,10 @@ class SequencerTrack:
 
         if self.note_index == 0 and self.next_rhythm:
             self.swap_rhythms()
+
+        if self.note_index == 0 and self.next_length:
+            self.length = self.next_length
+            self.next_length = None
 
     def set_next_rhythm(self, timestamps):
         """
@@ -241,10 +246,26 @@ class Sequencer:
         that it can continue.
         """
         self.set_bpm(bpm)
-        # TODO make sure the tracks continue playing from where they were
         self.start_time = time.time() + 0.001
         self.play_index = 1
         self.queue_outgoing.put("done")
+
+    def generate_rhythm(self, track_name, length):
+        """
+        Generate a rhythm of the given length for the given track.
+        """
+        new_rhythm = []
+
+        for i in range(length):
+            self.markov_chain.step()
+
+            if i == 6 and self.meter == (5, 4) or i == 8 and self.meter == (7, 8):
+                self.markov_chain.set_state("mid")
+
+            if self.markov_chain.state.name == track_name:
+                new_rhythm.append(i)
+
+        return new_rhythm
 
     def regenerate_rhythm(self, track_name):
         """
@@ -260,17 +281,7 @@ class Sequencer:
 
         self.markov_chain.state = None
         track = self.get_track(track_name)
-        new_rhythm = []
-
-        for i in range(self.get_sequence_length()):
-            self.markov_chain.step()
-
-            if i == 6 and self.meter == (5, 4) or i == 8 and self.meter == (7, 8):
-                self.markov_chain.set_state("mid")
-
-            if self.markov_chain.state.name == track_name:
-                new_rhythm.append(i)
-
+        new_rhythm = self.generate_rhythm(track_name, self.get_sequence_length())
         track.set_next_rhythm(new_rhythm)
 
     def export_midi(self, file_name):
@@ -301,7 +312,29 @@ class Sequencer:
         """
         Modulate from a 7/8 rhythm to 5/4 or vice versa.
         """
-        print("Not implemented yet.")
+        # Set new meter
+        self.meter = (5, 4) if self.meter == (7, 8) else (7, 8)
+        # Generate new markov chain using meter
+        self.markov_chain.from_rhythm_file(rhythm_file_path(self.meter))
+        # Regenerate mid and low tracks
+        self.regenerate_rhythm("mid")
+        self.regenerate_rhythm("low")
+
+        # Extend high track if necessary
+        if self.meter == (5, 4):
+            track = self.get_track("high")
+            self.markov_chain.set_state("high")
+            # Add 6 16th notes to go from 7/8 to 5/4.
+            extra_notes = self.generate_rhythm("high", 6)
+
+            for timestamp in extra_notes:
+                # Add rhythm to the end of the track
+                track.add_note(timestamp + 14, 1, 100)
+
+        # Update track lengths
+        for track in self.tracks:
+            track.next_length = self.get_sequence_length()
+
         self.queue_outgoing.put("done")
 
     def handle_command(self, command):
