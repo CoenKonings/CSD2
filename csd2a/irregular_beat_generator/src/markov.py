@@ -1,6 +1,8 @@
 """
 Author:     Coen Konings
 Date:       October 9, 2023
+Edited by:  Coen Konings
+On:         October 21, 2023
 
 markov.py:
 Contains the necessary classes to generate a polyphonic rhythm using a Markov

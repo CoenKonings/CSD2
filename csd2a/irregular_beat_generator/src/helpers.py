@@ -1,6 +1,8 @@
 """
 Author:     Coen Konings
 Date:       October 6, 2023
+Edited by:  Coen Konings
+On:         October 21, 2023
 
 helpers.py:
 Contains helper functions for input verification.
