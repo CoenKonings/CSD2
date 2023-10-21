@@ -12,7 +12,6 @@ import time
 from os.path import isfile
 from markov import MarkovChain
 from helpers import rhythm_file_path
-from midiutil.MidiFile import MIDIFile
 
 
 class NoteEvent:
@@ -174,6 +173,14 @@ class Sequencer:
         self.done_playing = False
         self.play_index = 0
 
+    def __str__(self):
+        """
+        Return this sequencer's status as a string.
+        """
+        return "Tracks: {}. Meter: {}/{}. Tempo: {}bpm.".format(
+            len(self.tracks), self.meter[0], self.meter[1], self.bpm
+        )
+
     def get_sequence_length(self):
         """
         Calculate the length of the sequence in 16th notes.
@@ -214,14 +221,6 @@ class Sequencer:
         for track in self.tracks:
             track.length = self.get_sequence_length() # Track length in 16ths
 
-    def __str__(self):
-        """
-        Return this sequencer's status as a string.
-        """
-        return "Tracks: {}. Meter: {}/{}. Tempo: {}bpm.".format(
-            len(self.tracks), self.meter[0], self.meter[1], self.bpm
-        )
-
     def add_track(self, length, audio_file, name):
         """
         Add a new track to this sequencer.
@@ -235,6 +234,17 @@ class Sequencer:
         Get a track by name.
         """
         return next((track for track in self.tracks if track.name == track_name), None)
+
+    def handle_bpm_command(self, bpm):
+        """
+        Set the sequencer's bpm and communicate to the live coding environment
+        that it can continue.
+        """
+        self.set_bpm(bpm)
+        # TODO make sure the tracks continue playing from where they were
+        self.start_time = time.time() + 0.001
+        self.play_index = 1
+        self.queue_outgoing.put("done")
 
     def regenerate_rhythm(self, track_name):
         """
@@ -287,6 +297,13 @@ class Sequencer:
         # with open(file_name, "wb") as output_file:
         #     midi_file.writeFile(output_file)
 
+    def metric_modulation(self):
+        """
+        Modulate from a 7/8 rhythm to 5/4 or vice versa.
+        """
+        print("Not implemented yet.")
+        self.queue_outgoing.put("done")
+
     def handle_command(self, command):
         """
         Handle commands from the queue.
@@ -297,16 +314,13 @@ class Sequencer:
         if len(command) == 1 and command[0] == "quit":
             self.done_playing = True
         elif command[0] == "bpm":
-            self.set_bpm(command[1])
-            # TODO make sure the tracks continue playing from where they were
-            self.start_time = time.time() + 0.001
-            self.play_index = 1
+            self.handle_bpm_command(command[1])
         elif command[0] == "regen":
             self.regenerate_rhythm(command[1])
         elif command[0] == "export":
             self.export_midi(command[1])
-
-        self.queue_outgoing.put("done")
+        elif command[0] == "modulate":
+            self.metric_modulation()
 
     def get_command(self):
         """

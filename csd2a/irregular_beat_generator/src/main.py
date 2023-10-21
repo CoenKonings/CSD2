@@ -54,18 +54,33 @@ class LiveCodingEnvironment:
         """
         self.queue_outgoing.put(command)
 
+    def print_help(self):
+        """
+        Print all possible commands and a short description of their usage.
+        """
+        help_string = """
+        quit - Quits the program
+        bpm <tempo> - Sets the tempo to the given tempo in bpm. <tempo> should be a positive integer.
+        regen <track> - Regenerates the rhythm for the given track. <track> should be "high", "mid", "low" or "all".
+        export <filename> - Export the currently playing rhythm to a MIDI file.
+        modulate - Modulate the meter from 7/8 to 5/4 or vice versa.
+        help - Prints this list of commands.
+        """
+
+        print(help_string)
+
     def handle_user_input(self, command):
         """
         Handle user input.
         TODO split validation and handling.
-        TODO send command as array?
+        TODO send command as array instead of tuple?
         """
         command = command.lower().split()
 
         if len(command) == 0:
             print("Please enter a command.")
         elif command[0] == "quit":
-            self.handle_command(command)
+            self.handle_command((command[0],))
             return True
         elif command[0] == "bpm" and len(command) == 2 and str_is_int_gt_zero(command[1]):
             self.handle_command_with_wait(("bpm", int(command[1])))
@@ -73,6 +88,10 @@ class LiveCodingEnvironment:
             self.handle_command((command[0], command[1]))
         elif command[0] == "export" and len(command) == 2:
             self.handle_command((command[0], command[1]))
+        elif command[0] == "modulate" and len(command) == 1:
+            self.handle_command_with_wait((command[0],))
+        elif command[0] == "help" and len(command) == 1:
+            self.print_help()
         else:
             print("Please enter a valid command.")
 
