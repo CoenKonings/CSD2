@@ -251,37 +251,18 @@ class Sequencer:
         self.play_index = 1
         self.queue_outgoing.put("done")
 
-    def generate_rhythm(self, track_name, length):
+    def generate_rhythms(self, track_names, length):
         """
-        Generate a rhythm of the given length for the given track.
+        Regenereate the given rhythms with a single markov chain.
         """
-        new_rhythm = []
+        new_rhythms = {}
 
-        for i in range(length):
-            self.markov_chain.step()
-
-            if i == 6 and self.meter == (5, 4) or i == 8 and self.meter == (7, 8):
-                self.markov_chain.set_state("mid")
-
-            if self.markov_chain.state.name == track_name:
-                new_rhythm.append(i)
-
-        return new_rhythm
-
-    def regenerate_all_rhythms(self):
-        """
-        Regenereate all rhythms with a single markov chain.
-        TODO: cleanup
-        """
-        new_rhythms = {
-            "high": [],
-            "mid": [],
-            "low": []
-        }
+        for track_name in track_names:
+            new_rhythms[track_name] = []
 
         self.markov_chain.state = None
 
-        for i in range(self.get_sequence_length()):
+        for i in range(length):
             self.markov_chain.step()
 
             if i == 6 and self.meter == (5, 4) or i == 8 and self.meter == (7, 8):
@@ -290,22 +271,18 @@ class Sequencer:
             if self.markov_chain.state.name in new_rhythms.keys():
                 new_rhythms[self.markov_chain.state.name].append(i)
 
-        for track_name in new_rhythms.keys():
-            self.get_track(track_name).set_next_rhythm(new_rhythms[track_name])
+        return new_rhythms
 
     def regenerate_rhythm(self, track_name):
         """
         Generate a new rhythm for the given track.
         """
         self.markov_chain.state = None
+        track_names = [track_name] if track_name != "all" else ["high", "mid", "low"]
+        new_rhythms = self.generate_rhythms(track_names, self.get_sequence_length())
 
-        if track_name == "all":
-            self.regenerate_all_rhythms()
-            return
-
-        track = self.get_track(track_name)
-        new_rhythm = self.generate_rhythm(track_name, self.get_sequence_length())
-        track.set_next_rhythm(new_rhythm)
+        for track_name in new_rhythms.keys():
+            self.get_track(track_name).set_next_rhythm(new_rhythms[track_name])
 
     def export_midi(self, file_name):
         """
@@ -347,7 +324,7 @@ class Sequencer:
             track = self.get_track("high")
             self.markov_chain.set_state("high")
             # Add 6 16th notes to go from 7/8 to 5/4.
-            extra_notes = self.generate_rhythm("high", 6)
+            extra_notes = self.generate_rhythms(["high"], 6)["high"]
 
             for timestamp in extra_notes:
                 # Add rhythm to the end of the track
