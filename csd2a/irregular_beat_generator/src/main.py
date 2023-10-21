@@ -69,31 +69,57 @@ class LiveCodingEnvironment:
 
         print(help_string)
 
-    def handle_user_input(self, command):
+    def input_valid(self, command):
         """
-        Handle user input.
-        TODO split validation and handling.
-        TODO send command as array instead of tuple?
+        Validate user input. Return True if input is valid, False otherwise.
         """
         command = command.lower().split()
 
         if len(command) == 0:
             print("Please enter a command.")
-        elif command[0] == "quit":
+            return False
+
+        if command[0] not in ["quit", "bpm", "regen", "export", "modulate", "help"]:
+            print("Please enter a valid command.")
+            return False
+
+        if command[0] in ["quit", "modulate", "help"] and len(command) != 1:
+            print("This command does not take any parameters.")
+            return False
+
+        if command[0] in ["bpm", "regen", "export"] and len(command) != 2:
+            print("Please enter exactly one parameter.")
+            return False
+
+        if command[0] == "bpm" and not str_is_int_gt_zero(command[1]):
+            print("Please enter a valid BPM.")
+            return False
+
+        if command[0] == "regen" and command[1] not in ["high", "mid", "low", "all"]:
+            print("Please enter a valid track to regenerate.")
+            return False
+
+        return True
+
+    def handle_user_input(self, command):
+        """
+        Handle user input.
+        """
+        command = command.lower().split()
+
+        if command[0] == "quit":
             self.handle_command((command[0],))
             return True
-        elif command[0] == "bpm" and len(command) == 2 and str_is_int_gt_zero(command[1]):
+        elif command[0] == "bpm":
             self.handle_command_with_wait(("bpm", int(command[1])))
-        elif command[0] == "regen" and len(command) == 2 and command[1] in ["low", "mid", "high", "all"]:
+        elif command[0] == "regen":
             self.handle_command((command[0], command[1]))
-        elif command[0] == "export" and len(command) == 2:
+        elif command[0] == "export":
             self.handle_command((command[0], command[1]))
-        elif command[0] == "modulate" and len(command) == 1:
+        elif command[0] == "modulate":
             self.handle_command_with_wait((command[0],))
-        elif command[0] == "help" and len(command) == 1:
+        elif command[0] == "help":
             self.print_help()
-        else:
-            print("Please enter a valid command.")
 
         return False
 
@@ -106,7 +132,9 @@ class LiveCodingEnvironment:
         while not done:
             print(self.sequencer)
             user_input = input(">")
-            done = self.handle_user_input(user_input)
+
+            if self.input_valid(user_input):
+                done = self.handle_user_input(user_input)
 
     def start(self):
         """
