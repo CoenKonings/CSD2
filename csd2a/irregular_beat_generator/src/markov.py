@@ -16,9 +16,6 @@ class Node:
         """
         A node has a name. After the node has been created, edges can be added
         to connect nodes with each other.
-
-        TODO restructure so that the name and the sounds associated with the
-        node are independent.
         """
         self.name = name
         self.edges = []
@@ -163,7 +160,10 @@ class MarkovChain:
     def from_rhythm_file(self, file_path):
         """
         Read a rhythm from a file and generate a markov chain.
-        TODO: clean up this mess
+
+        NOTE This function is very messy, but I decided to prioritize
+             implementing more functionality over cleaning this up. The
+             comments should help understand what is happening.
         """
 
         self.nodes = []
@@ -210,10 +210,11 @@ class MarkovChain:
 
             onset = onsets.pop(0)
 
-        # Create the Markov Chain given the previously generated dictionary.
+        # Add all nodes to the Markov Chain.
         for node_name in edges.keys():
             self.add_node(node_name)
 
+        # Add the edges with their associated weights to the Markov Chain.
         for from_node_name in edges.keys():
             for to_node_name in edges.keys():
                 percent = edges[from_node_name].count(to_node_name) / len(
