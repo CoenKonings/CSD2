@@ -11,7 +11,6 @@ rhythm.
 import threading
 import time
 from sequencer import Sequencer
-from markov import MarkovChain
 from queue import Queue
 from helpers import str_is_int_gt_zero
 
