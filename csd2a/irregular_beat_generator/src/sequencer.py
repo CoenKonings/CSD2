@@ -12,6 +12,7 @@ import time
 from os.path import isfile
 from markov import MarkovChain
 from helpers import rhythm_file_path
+from midiutil import MIDIFile
 
 
 class NoteEvent:
@@ -277,7 +278,7 @@ class Sequencer:
         if track_name == "all":
             for track in ["low", "mid", "high"]:
                 self.regenerate_rhythm(track)
-                return
+            return
 
         self.markov_chain.state = None
         track = self.get_track(track_name)
@@ -287,9 +288,8 @@ class Sequencer:
     def export_midi(self, file_name):
         """
         Export the current rhythm to a midi track. Source:
-        https://midiutil.readthedocs.io/en/1.2.1/index.html
+        https://pypi.org/project/MIDIUtil/
         """
-        print("This functionality is not working yet...")
         # midi_file = MIDIFile(1, removeDuplicates=False)
         # midi_track = 0
         # time = 0
@@ -301,7 +301,7 @@ class Sequencer:
         #     track = self.get_track(track_name)
 
         #     for note_event in track.note_events:
-        #         midi_file.addNote(midi_track, 0, pitch, note_event.timestamp / 4, note_event.timestamp / 4, note_event.velocity)
+        #         midi_file.addNote(midi_track, 0, pitch, note_event.timestamp / 4, 0.25, note_event.velocity)
 
         #     pitch += 1 # Separate pitch for each track in the sequencer.
 
