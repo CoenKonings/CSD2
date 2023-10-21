@@ -400,3 +400,7 @@ class Sequencer:
                 self.play_index += 1
             else:
                 time.sleep(0.001)
+
+
+if __name__ == "__main__":
+    print("Please run from main.py.")
