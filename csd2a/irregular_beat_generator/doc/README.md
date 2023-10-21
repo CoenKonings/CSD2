@@ -22,5 +22,3 @@ The following commands can be used to interact with the system:
 
 ## Process description
 The Sequencer class that was already present was restructured to accept commands from a newly created LiveCodingEnvironment class. Upon receiving the `regen` command, it uses the MarkovChain class to generate a new rhythm.
-
-Unfortunately, the tactic for compound meter beat generation described in `PLAN.md` does not yield the best result - the beats appear somewhat erratic and the feel of the meter is not present. Because of this, beat generation will be changed to be based on adding groups of 2 or 3 sixteenth notes to the kick and snare, and a fully random pattern on the hihat.
