@@ -132,12 +132,17 @@ class SequencerTrack:
         """
         self.sixteenth_index = (self.sixteenth_index + 1) % self.length
 
-        if len(self.note_events) > 0 and self.note_events[self.note_index].timestamp == self.sixteenth_index:
+        if (
+            len(self.note_events) > 0
+            and self.note_events[self.note_index].timestamp == self.sixteenth_index
+        ):
             self.note_events[self.note_index].play()
             self.note_index = (self.note_index + 1) % len(self.note_events)
 
-
-        if len(self.note_events) > 0 and self.note_events[self.note_index].timestamp >= self.length:
+        if (
+            len(self.note_events) > 0
+            and self.note_events[self.note_index].timestamp >= self.length
+        ):
             self.note_index = 0
 
         if self.note_index == 0 and self.next_rhythm:
@@ -206,7 +211,9 @@ class Sequencer:
                 raise Exception('Audio file "{}" not found.'.format(audio_file_path))
 
             audio_file = sa.WaveObject.from_wave_file(audio_file_path)
-            self.tracks.append(SequencerTrack(self, self.get_sequence_length(), audio_file, track_name))
+            self.tracks.append(
+                SequencerTrack(self, self.get_sequence_length(), audio_file, track_name)
+            )
 
     def set_bpm(self, bpm):
         """
@@ -225,7 +232,7 @@ class Sequencer:
         self.markov_chain.from_rhythm_file(rhythm_file_path(self.meter))
 
         for track in self.tracks:
-            track.length = self.get_sequence_length() # Track length in 16ths
+            track.length = self.get_sequence_length()  # Track length in 16ths
 
     def add_track(self, length, audio_file, name):
         """
@@ -302,9 +309,16 @@ class Sequencer:
             track = self.get_track(track_name)
 
             for note_event in track.note_events:
-                midi_file.addNote(midi_track, 0, pitch, note_event.timestamp / 4, 0.25, note_event.velocity)
+                midi_file.addNote(
+                    midi_track,
+                    0,
+                    pitch,
+                    note_event.timestamp / 4,
+                    0.25,
+                    note_event.velocity,
+                )
 
-            pitch += 1 # Separate pitch for each track in the sequencer.
+            pitch += 1  # Separate pitch for each track in the sequencer.
 
         with open(file_name, "wb") as output_file:
             midi_file.writeFile(output_file)
@@ -341,6 +355,7 @@ class Sequencer:
     def handle_command(self, command):
         """
         Handle commands from the queue.
+        NOTE this function assumes invalid commands are not sent down the queue.
         """
         if not command:
             return
