@@ -290,23 +290,23 @@ class Sequencer:
         Export the current rhythm to a midi track. Source:
         https://pypi.org/project/MIDIUtil/
         """
-        # midi_file = MIDIFile(1, removeDuplicates=False)
-        # midi_track = 0
-        # time = 0
-        # midi_file.addTrackName(midi_track, time, "Rhythm Track")
-        # midi_file.addTempo(midi_track, time, self.bpm)
-        # pitch = 48
+        midi_file = MIDIFile(1, removeDuplicates=False)
+        midi_track = 0
+        time = 0
+        midi_file.addTrackName(midi_track, time, "Rhythm Track")
+        midi_file.addTempo(midi_track, time, self.bpm)
+        pitch = 48
 
-        # for track_name in ["low", "mid", "high"]:
-        #     track = self.get_track(track_name)
+        for track_name in ["low", "mid", "high"]:
+            track = self.get_track(track_name)
 
-        #     for note_event in track.note_events:
-        #         midi_file.addNote(midi_track, 0, pitch, note_event.timestamp / 4, 0.25, note_event.velocity)
+            for note_event in track.note_events:
+                midi_file.addNote(midi_track, 0, pitch, note_event.timestamp / 4, 0.25, note_event.velocity)
 
-        #     pitch += 1 # Separate pitch for each track in the sequencer.
+            pitch += 1 # Separate pitch for each track in the sequencer.
 
-        # with open(file_name, "wb") as output_file:
-        #     midi_file.writeFile(output_file)
+        with open(file_name, "wb") as output_file:
+            midi_file.writeFile(output_file)
 
     def metric_modulation(self):
         """
