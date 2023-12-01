@@ -3,11 +3,11 @@ CXXFLAGS=-Wall -std=c++14
 LDFLAGS=
 SOURCE= instrument.o main.o
 
-instrument: $(SOURCE)
+instrument.bin: $(SOURCE)
 	$(CXX) -o $@ $(SOURCE) $(LDFLAGS)
 
 .cpp.o:
 	$(CXX) -c $(CXXFLAGS) $<
 
 clean:
-	rm -f instrument *.o
+	rm -f instrument.bin *.o
