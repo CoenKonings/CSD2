@@ -1,9 +1,10 @@
 #include "instrument.h"
 
 int main() {
-    std::cout << "Playing default instrument." << std::endl;
-    Instrument trumpet;
+    Instrument trumpet("Bwaahp!");
+    Instrument mayonnaise("No, mayonnaise is not an instrument.");
     trumpet.play();
+    mayonnaise.play();
 
     return 0;
 }
